@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import Post from "../models/post.model.js";
 
 // cookies option
 const options = {
@@ -106,3 +107,163 @@ export const logoutUser = asyncHandler(async (req, res) => {
     .clearCookie("token", options)
     .json({ success: true, message: "log out successfully" });
 });
+
+// togglefollowunfollow user
+export const toggleFollowUser = asyncHandler(async (req, res) => {
+  const targetUserId = req.params.id;
+  const userId = req.user._id;
+
+  if (targetUserId === userId.toString()) {
+    return res
+      .status(400)
+      .json({ success: false, message: "You cannot follow yourself." });
+  }
+
+  const me = await User.findById(userId);
+  const targetUser = await User.findById(targetUserId);
+
+  if (!me || !targetUser) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  const isFollowing = me.following.includes(targetUserId);
+
+  if (isFollowing) {
+    // Unfollow
+    me.following.pull(targetUserId);
+    targetUser.followers.pull(userId);
+    await me.save();
+    await targetUser.save();
+    return res.status(200).json({ success: true, message: "Unfollowed" });
+  } else {
+    // Follow
+    me.following.push(targetUserId);
+    targetUser.followers.push(userId);
+    await me.save();
+    await targetUser.save();
+    return res
+      .status(200)
+      .json({ success: true, message: "Followed", isFollowing });
+  }
+});
+
+// toggle bookmark
+export const toggleBookmarkPost = asyncHandler(async (req, res) => {
+  const postId = req.params.id;
+  const userId = req.user._id;
+
+  const me = await User.findById(userId);
+  const post = await Post.findById(postId);
+
+  if (!me || !post) {
+    return res
+      .status(404)
+      .json({ success: false, message: "User or Post not found" });
+  }
+
+  const isBookmarked = me.bookmarks.includes(postId);
+
+  if (isBookmarked) {
+    // Unbookmark
+    me.bookmarks.pull(postId);
+    post.bookmarks.pull(userId);
+    await me.save();
+    await post.save();
+    return res
+      .status(200)
+      .json({ success: true, message: "Post unbookmarked" });
+  } else {
+    // Bookmark
+    me.bookmarks.push(postId);
+    post.bookmarks.push(userId);
+    await me.save();
+    await post.save();
+    return res
+      .status(200)
+      .json({ success: true, message: "Post bookmarked", isBookmarked });
+  }
+});
+
+// export const followUser = asyncHandler(async (req, res) => {
+//   const targetUserId = req.params.id;
+//   const userId = req.user._id;
+
+//   if (targetUserId === userId.toString()) {
+//     return res
+//       .status(400)
+//       .json({ success: false, message: "You cannot follow yourself." });
+//   }
+
+//   const me = await User.findById(userId);
+//   const targetUser = await User.findById(targetUserId);
+
+//   if (!me || !targetUser) {
+//     return res.status(404).json({ success: false, message: "User not found" });
+//   }
+
+//   if (!me.following.includes(targetUserId)) {
+//     me.following.push(targetUserId);
+//     await me.save();
+
+//     if (!targetUser.followers.includes(userId)) {
+//       targetUser.followers.push(userId);
+//       await targetUser.save();
+//     }
+//   }
+
+//   return res.status(200).json({ success: true, message: "Followed" });
+// });
+
+// unfollow user
+
+// export const unfollowUser = asyncHandler(async (req, res) => {
+//   const targetUserId = req.params.id;
+//   const userId = req.user._id;
+
+//   const me = await User.findById(userId);
+//   const targetUser = await User.findById(targetUserId);
+
+//   if (!me || !targetUser) {
+//     return res.status(404).json({ success: false, message: "User not found" });
+//   }
+
+//   if (me.following.includes(targetUserId)) {
+//     me.following.pull(targetUserId);
+//     await me.save();
+
+//     if (targetUser.followers.includes(userId)) {
+//       targetUser.followers.pull(userId);
+//       await targetUser.save();
+//     }
+//   }
+
+//   return res.status(200).json({ success: true, message: "Unfollowed" });
+// });
+
+// bookmarks
+
+// export const userBookmarks = asyncHandler(async (req, res) => {
+//   const postId = req.params.id;
+//   const userId = req.user._id;
+
+//   const me = await User.findById(userId);
+//   const post = await Post.findById(postId);
+
+//   if (!me || !post) {
+//     return res
+//       .status(404)
+//       .json({ success: false, message: "User or Post not found" });
+//   }
+
+//   if (!me.bookmarks.includes(postId)) {
+//     me.bookmarks.push(postId);
+//     await me.save();
+
+//     if (!post.bookmarks.includes(userId)) {
+//       post.bookmarks.push(userId);
+//       await post.save();
+//     }
+//   }
+
+//   return res.status(200).json({ success: true, message: "Post bookmarked" });
+// });

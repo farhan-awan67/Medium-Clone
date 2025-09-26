@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/user.routes.js";
+import postRoutes from "./routes/posts.routes.js";
 
 // env config
 if (process.env.NODE_ENV !== "production") {
@@ -19,6 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 // routes
 app.use("/api/auth", userRoutes);
+app.use("/api", postRoutes);
 
 app.listen(PORT, () => {
   connectDB();
