@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Post from "../models/post.model.js";
+import Notifications from "../models/notifications.model.js";
 
 // cookies option
 const options = {
@@ -65,7 +66,9 @@ export const loginUser = asyncHandler(async (req, res) => {
   }
 
   // looking for user in db
-  const user = await User.findOne({ $or: [{ username }, { email }] });
+  const user = await User.findOne({ $or: [{ username }, { email }] }).select(
+    "+password"
+  );
   if (!user) {
     return res.status(404).json({ success: false, message: "user not found" });
   }
@@ -126,7 +129,9 @@ export const toggleFollowUser = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  const isFollowing = me.following.includes(targetUserId);
+  const isFollowing = me.following
+    .map((id) => id.toString())
+    .includes(targetUserId);
 
   if (isFollowing) {
     // Unfollow
@@ -134,16 +139,58 @@ export const toggleFollowUser = asyncHandler(async (req, res) => {
     targetUser.followers.pull(userId);
     await me.save();
     await targetUser.save();
-    return res.status(200).json({ success: true, message: "Unfollowed" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Unfollowed",
+      isFollowing: false,
+      followersCount: targetUser.followers.length,
+      followingCount: me.following.length,
+    });
   } else {
     // Follow
     me.following.push(targetUserId);
     targetUser.followers.push(userId);
     await me.save();
     await targetUser.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "Followed", isFollowing });
+
+    // Avoid duplicate follow notifications
+    const existingFollowNotif = await Notifications.findOne({
+      user: targetUserId,
+      actor: userId,
+      type: "follow",
+    });
+
+    if (!existingFollowNotif) {
+      const notification = new Notifications({
+        user: targetUserId,
+        actor: userId,
+        type: "follow",
+      });
+      await notification.save();
+    }
+
+    // 🔌 OPTIONAL: Emit socket event (see below)
+    // 🔌 Emit Socket.IO follow notification
+    const targetSocketId = onlineUsers.get(targetUserId.toString());
+    if (targetSocketId) {
+      io.to(targetSocketId).emit("new-notification", {
+        type: "follow",
+        actor: {
+          _id: userId,
+          username: me.username,
+        },
+        createdAt: new Date(),
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Followed",
+      isFollowing: true,
+      followersCount: targetUser.followers.length,
+      followingCount: me.following.length,
+    });
   }
 });
 
@@ -153,7 +200,7 @@ export const toggleBookmarkPost = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   const me = await User.findById(userId);
-  const post = await Post.findById(postId);
+  const post = await Post.findById(postId).populate("author");
 
   if (!me || !post) {
     return res
@@ -161,7 +208,7 @@ export const toggleBookmarkPost = asyncHandler(async (req, res) => {
       .json({ success: false, message: "User or Post not found" });
   }
 
-  const isBookmarked = me.bookmarks.includes(postId);
+  const isBookmarked = me.bookmarks.map((id) => id.toString()).includes(postId);
 
   if (isBookmarked) {
     // Unbookmark
@@ -169,19 +216,111 @@ export const toggleBookmarkPost = asyncHandler(async (req, res) => {
     post.bookmarks.pull(userId);
     await me.save();
     await post.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "Post unbookmarked" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Post unbookmarked",
+      isBookmarked: false,
+    });
   } else {
     // Bookmark
     me.bookmarks.push(postId);
     post.bookmarks.push(userId);
     await me.save();
     await post.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "Post bookmarked", isBookmarked });
+
+    const targetUserId = post.author._id.toString();
+
+    // Avoid notifying self
+    if (targetUserId !== userId.toString()) {
+      const existingNotification = await Notifications.findOne({
+        user: targetUserId,
+        actor: userId,
+        post: postId,
+        type: "bookmark",
+      });
+
+      if (!existingNotification) {
+        const notification = new Notifications({
+          user: targetUserId,
+          actor: userId,
+          post: postId,
+          type: "bookmark",
+        });
+        await notification.save();
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Post bookmarked",
+      isBookmarked: true,
+    });
   }
+});
+
+// get user notifcations
+export const userNotifications = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  //  find user notifications and validate
+  const notifications = await Notifications.find({ user: userId })
+    .populate("actor", "username name")
+    .sort({
+      createdAt: -1,
+    });
+  console.log(notifications);
+  if (!notifications) {
+    return res
+      .status(404)
+      .json({ success: false, message: "no notifications." });
+  }
+
+  // if user notifications found then
+  let message = notifications.map((notif) => {
+    const message = `${notif?.actor?.username} ${notif?.type} your post`;
+    return message;
+  });
+
+  return res.status(200).json({
+    success: true,
+    message,
+    notifications,
+  });
+});
+
+// read notification
+export const readNotification = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const notificationId = req.params.id;
+
+  const notification = await Notifications.findById(notificationId);
+
+  if (!notification) {
+    return res
+      .status(404)
+      .json({ success: false, message: "No notification found" });
+  }
+
+  // Check ownership (optional but recommended)
+  if (notification.user.toString() !== userId.toString()) {
+    return res.status(403).json({ success: false, message: "Access denied" });
+  }
+
+  // Mark as read
+  notification.read = true;
+  await notification.save();
+
+  // Get related post (if applicable)
+  let post = null;
+  if (notification.post) {
+    post = await Post.findById(notification.post.toString());
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Notification marked as read",
+    post,
+  });
 });
 
 // export const followUser = asyncHandler(async (req, res) => {

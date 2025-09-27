@@ -1,18 +1,38 @@
+import slugify from "slugify";
 import Post from "../models/post.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import Tags from "../models/tags.model.js";
+import Notifications from "../models/notifications.model.js";
 
 // create post
 export const createPost = asyncHandler(async (req, res) => {
   const { title, bodyHtml, tags, status, bodyDoc } = req.body;
-  console.log(req.body);
   const author = req.user._id;
-  console.log(author);
+
   if (!title || !bodyHtml) {
     return res.status(400).json({ message: "Title and body are required" });
   }
   const post = new Post({ title, bodyHtml, tags, status, author, bodyDoc });
 
   await post.save();
+
+  if (tags && tags.length > 0) {
+    for (let tagName of tags) {
+      const slug = tagName.tagName.toLowerCase().replace(/\s+/g, "-");
+
+      const tag = await Tags.findOne({ slug });
+      if (tag) {
+        tag.postCount += 1;
+        await tag.save();
+      } else {
+        new Tags({
+          name: tagName,
+          slug,
+          postCount: 1,
+        });
+      }
+    }
+  }
 
   res
     .status(201)
@@ -90,6 +110,16 @@ export const toggleLikes = asyncHandler(async (req, res) => {
     post.likes.pull(userId);
   } else {
     post.likes.push(userId);
+
+    const notifications = new Notifications({
+      user: post.author,
+      actor: userId,
+      type: "like",
+      post: postId,
+      comment: null,
+      read: false,
+    });
+    await notifications.save();
   }
 
   await post.save();
