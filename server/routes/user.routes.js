@@ -4,6 +4,7 @@ import {
   getUserProfile,
   loginUser,
   logoutUser,
+  markAllNotificationsAsRead,
   readNotification,
   registerUser,
   toggleBookmarkPost,
@@ -21,5 +22,10 @@ router.put("/follow/:id", verifyToken, toggleFollowUser);
 router.put("/bookmark/:id", verifyToken, toggleBookmarkPost);
 router.get("/user/notifications", verifyToken, userNotifications);
 router.get("/user/notifications/:id", verifyToken, readNotification);
+router.put(
+  "/user/notifications/mark-all-read",
+  verifyToken,
+  markAllNotificationsAsRead
+);
 
 export default router;

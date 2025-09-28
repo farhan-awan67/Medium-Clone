@@ -111,15 +111,17 @@ export const toggleLikes = asyncHandler(async (req, res) => {
   } else {
     post.likes.push(userId);
 
-    const notifications = new Notifications({
-      user: post.author,
-      actor: userId,
-      type: "like",
-      post: postId,
-      comment: null,
-      read: false,
-    });
-    await notifications.save();
+    if (!userId.equals(post.author)) {
+      const notifications = new Notifications({
+        user: post.author,
+        actor: userId,
+        type: "like",
+        post: postId,
+        comment: null,
+        read: false,
+      });
+      await notifications.save();
+    }
   }
 
   await post.save();

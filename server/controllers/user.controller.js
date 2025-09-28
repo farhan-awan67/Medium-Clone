@@ -323,6 +323,20 @@ export const readNotification = asyncHandler(async (req, res) => {
   });
 });
 
+// PATCH /api/notifications/mark-all-read
+export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  await Notifications.updateMany(
+    { user: userId, read: false },
+    { $set: { read: true } }
+  );
+
+  res
+    .status(200)
+    .json({ success: true, message: "All notifications marked as read" });
+});
+
 // export const followUser = asyncHandler(async (req, res) => {
 //   const targetUserId = req.params.id;
 //   const userId = req.user._id;
