@@ -1,4 +1,10 @@
 import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
+dotenv.config();
+
+console.log("name", process.env.CLOUD_NAME);
+console.log("key", process.env.CLOUD_API_KEY);
+console.log("secret", process.env.CLOUD_API_SECRET);
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,

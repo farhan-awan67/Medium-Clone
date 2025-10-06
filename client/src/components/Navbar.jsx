@@ -1,6 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { toggleLogin } from "../features/uiSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const Navbar = () => {
+  const { showLogin } = useSelector((state) => state.ui);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = false;
 
@@ -28,7 +32,9 @@ const Navbar = () => {
           </div>
         ) : (
           <button
-            onClick={() => setShowLogin(!showLogin)}
+            onClick={() => (
+              dispatch(toggleLogin(!showLogin)), console.log(showLogin)
+            )}
             className="cursor-pointer px-8 py-2 bg-[#000000]  transition text-white rounded-full"
           >
             Login

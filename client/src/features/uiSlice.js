@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { act } from "react";
 
+// Initial state
 const initialState = {
   authTab: "Login",
   showLogin: false,
 };
 
+// Create the slice
 export const uiSlice = createSlice({
   name: "ui",
   initialState,
@@ -18,3 +19,9 @@ export const uiSlice = createSlice({
     },
   },
 });
+
+// Export actions correctly
+export const { toggleLogin, setAuthTab } = uiSlice.actions;
+
+// Export reducer as default
+export default uiSlice.reducer;

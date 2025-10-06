@@ -7,15 +7,21 @@ import {
   updatePost,
 } from "../controllers/posts.controller.js";
 import { verifyToken } from "../middlewares/auth.js";
+import upload from "../middlewares/multer.js";
 
 const router = express.Router();
 
 // posts routes
-router.post("/create-post", verifyToken, createPost);
-router.get("/posts", verifyToken, getAllPosts);
-router.get("/posts/:slug", verifyToken, singlePost);
-router.put("/update-post/:slug", verifyToken, updatePost);
-router.put("/posts/:id/like", verifyToken, toggleLikes);
-router.delete("/delete-post/:slug", verifyToken, updatePost);
+router.post(
+  "/create-post",
+  upload.single("coverImage"),
+  verifyToken,
+  createPost
+);
+router.get("/posts", getAllPosts);
+router.get("/posts/:slug", singlePost);
+router.put("/update-post/:slug", updatePost);
+router.put("/posts/:id/like", toggleLikes);
+router.delete("/delete-post/:slug", updatePost);
 
 export default router;

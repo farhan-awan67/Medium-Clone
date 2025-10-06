@@ -8,17 +8,27 @@ import Notifications from "../models/notifications.model.js";
 export const createPost = asyncHandler(async (req, res) => {
   const { title, bodyHtml, tags, status, bodyDoc } = req.body;
   const author = req.user._id;
+  const file = req.file;
+  console.log(file);
 
   if (!title || !bodyHtml) {
     return res.status(400).json({ message: "Title and body are required" });
   }
-  const post = new Post({ title, bodyHtml, tags, status, author, bodyDoc });
+  const post = new Post({
+    title,
+    bodyHtml,
+    tags,
+    status,
+    author,
+    bodyDoc,
+    coverImage: file.path,
+  });
 
   await post.save();
 
   if (tags && tags.length > 0) {
     for (let tagName of tags) {
-      const slug = tagName.tagName.toLowerCase().replace(/\s+/g, "-");
+      const slug = tagName.toLowerCase().replace(/\s+/g, "-");
 
       const tag = await Tags.findOne({ slug });
       if (tag) {
