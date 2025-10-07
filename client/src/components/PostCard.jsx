@@ -5,6 +5,7 @@ import {
   ChatBubbleLeftIcon,
   BookmarkIcon,
 } from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
 import dayjs from "../utils/dayjs";
 
 const PostCard = ({ post }) => {
@@ -12,8 +13,14 @@ const PostCard = ({ post }) => {
   const timeAgo = dayjs(post.createdAt).fromNow(); // e.g., "2 hours ago"
   console.log(timeAgo);
 
+  // if following true then stying
+  // bg-white text-gray-700 border-gray-300 hover:bg-gray-100
+
   return (
-    <div className="bg-white rounded-md shadow p-6 mb-6">
+    <Link
+      to={`/post/${post.slug}`}
+      className="bg-white rounded-md shadow p-6 mb-6"
+    >
       {/* Author Section */}
       <div className="flex items-center mb-4">
         <img
@@ -25,6 +32,9 @@ const PostCard = ({ post }) => {
           <p className="text-sm font-semibold">{post.author.username}</p>
           <p className="text-xs text-gray-500">{timeAgo}</p>
         </div>
+        <button className="ml-auto  bg-black text-white border-black hover:bg-gray-800">
+          follow
+        </button>
       </div>
 
       {/* Content */}
@@ -54,7 +64,7 @@ const PostCard = ({ post }) => {
           <BookmarkIcon className="w-5 h-5 cursor-pointer" />
         </button>
       </div>
-    </div>
+    </Link>
   );
 };
 
