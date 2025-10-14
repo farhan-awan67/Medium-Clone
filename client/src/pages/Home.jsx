@@ -7,7 +7,6 @@ import { useSelector, useDispatch } from "react-redux";
 const Home = () => {
   const dispatch = useDispatch();
   const { posts, loading, error } = useSelector((state) => state.posts);
-  console.log(posts);
 
   useEffect(() => {
     dispatch(fetchPosts());

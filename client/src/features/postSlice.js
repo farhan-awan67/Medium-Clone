@@ -8,9 +8,7 @@ export const fetchPosts = createAsyncThunk(
       const res = await axios.get(
         `${import.meta.env.VITE_SERVER_API}/api/posts`
       );
-      // console.log(res.data.posts);
       const { posts } = res.data;
-      console.log(posts);
       return posts; // goes to fulfilled
     } catch (err) {
       return rejectWithValue(err.response.data.message);
@@ -18,22 +16,7 @@ export const fetchPosts = createAsyncThunk(
   }
 );
 
-// export const fetchSinglePost = createAsyncThunk(
-//   "posts/postbyslug",
-//   async (slug, { rejectWithValue }) => {
-//     try {
-//       const res = await axios.get(
-//         `${import.meta.env.VITE_SERVER_API}/api/posts/${slug}`
-//       );
-//       // console.log(res.data.posts);
-//       const { posts } = res.data;
-//       console.log(posts);
-//       return posts; // goes to fulfilled
-//     } catch (err) {
-//       return rejectWithValue(err.response.data.message);
-//     }
-//   }
-// );
+
 
 const initialState = {
   posts: [],

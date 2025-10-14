@@ -1,12 +1,59 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleLogin, setAuthTab } from "../features/uiSlice"; // Adjust the path
+import { fetchUser } from "../features/authSlice";
+import { useValidate } from "../hooks/useValidate";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { authTab, showLogin } = useSelector((state) => state.ui);
   const dispatch = useDispatch();
-  console.log(useSelector((state) => state.ui));
-  console.log(authTab, showLogin);
+  const { user, loading, error, token } = useSelector((state) => state.auth);
+  const [data, setData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const { validateError, validateForm, setValidateError } = useValidate();
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const isValid = validateForm(data);
+    if (isValid) return;
+
+    if (authTab === "signup") {
+      dispatch(fetchUser({ authTab, credentials: data }));
+      setData({
+        username: "",
+        email: "",
+        password: "",
+      });
+    } else {
+      const { email, password } = data;
+      dispatch(
+        fetchUser({ authTab: "login", credentials: { email, password } })
+      );
+      setData({
+        username: "",
+        email: "",
+        password: "",
+      });
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setValidateError((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  if (!showLogin || token) return null;
 
   return (
     showLogin && (
@@ -25,7 +72,11 @@ const Login = () => {
               </h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-neutral-400">
                 Don't have an account yet?
-                <span onClick={() => dispatch(setAuthTab("Sign up"))}>
+                <span
+                  className="cursor-pointer"
+                  onClick={() => dispatch(setAuthTab("Sign up"))}
+                >
+                  {" "}
                   Sign up here
                 </span>
               </p>
@@ -33,7 +84,7 @@ const Login = () => {
 
             <div className="mt-5">
               {/* <!-- htmlForm --> */}
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="grid gap-y-4">
                   {/* <!-- htmlForm Group --> */}
                   {authTab === "Sign up" ? (
@@ -48,30 +99,20 @@ const Login = () => {
                         <input
                           type="text"
                           id="username"
-                          name="usrname"
+                          name="username"
+                          value={data.username}
+                          onChange={(e) => handleChange(e)}
                           className="py-2.5 sm:py-3 px-4 block w-full border-gray-200 rounded-lg sm:text-sm border focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none "
-                          required
                           aria-describedby="username-error"
                         />
-                        <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
-                          <svg
-                            className="size-5 text-red-500"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            viewBox="0 0 16 16"
-                            aria-hidden="true"
-                          >
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                          </svg>
-                        </div>
                       </div>
                       <p
-                        className="hidden text-xs text-red-600 mt-2"
+                        className={`${
+                          validateError.username ? "block" : "hidden"
+                        } text-xs text-red-600 mt-2 `}
                         id="email-error"
                       >
-                        Please include a valid email address so we can get back
-                        to you
+                        {validateError?.username}
                       </p>
                     </div>
                   ) : (
@@ -94,29 +135,19 @@ const Login = () => {
                         type="email"
                         id="email"
                         name="email"
+                        value={data.email}
+                        onChange={(e) => handleChange(e)}
                         className="py-2.5 sm:py-3 px-4 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-white border"
-                        required
                         aria-describedby="email-error"
                       />
-                      <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
-                        <svg
-                          className="size-5 text-red-500"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                          aria-hidden="true"
-                        >
-                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                        </svg>
-                      </div>
                     </div>
                     <p
-                      className="hidden text-xs text-red-600 mt-2"
+                      className={`${
+                        validateError.email ? "block" : "hidden"
+                      } text-xs text-red-600 mt-2`}
                       id="email-error"
                     >
-                      Please include a valid email address so we can get back to
-                      you
+                      {validateError?.email}
                     </p>
                   </div>
                   {/* <!-- End htmlForm Group --> */}
@@ -136,37 +167,28 @@ const Login = () => {
                         type="password"
                         id="password"
                         name="password"
+                        value={data.password}
+                        onChange={(e) => handleChange(e)}
                         className="py-2.5 sm:py-3 px-4 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-white border"
-                        required
                         aria-describedby="password-error"
                       />
-                      <div className="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
-                        <svg
-                          className="size-5 text-red-500"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                          aria-hidden="true"
-                        >
-                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                        </svg>
-                      </div>
                     </div>
                     <p
-                      className="hidden text-xs text-red-600 mt-2"
-                      id="password-error"
+                      className={`${
+                        validateError.password ? "block" : "hidden"
+                      } text-xs text-red-600 mt-2"
+                      id="password-error`}
                     >
-                      8+ characters required
+                      {validateError?.password}
                     </p>
                   </div>
                   {/* <!-- End htmlForm Group --> */}
 
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                    className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                   >
-                    Sign in
+                    {authTab === "Login" ? "Login" : "Sign in"}
                   </button>
                 </div>
               </form>

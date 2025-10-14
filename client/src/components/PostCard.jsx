@@ -11,7 +11,6 @@ import dayjs from "../utils/dayjs";
 const PostCard = ({ post }) => {
   // inside your component
   const timeAgo = dayjs(post.createdAt).fromNow(); // e.g., "2 hours ago"
-  console.log(timeAgo);
 
   // if following true then stying
   // bg-white text-gray-700 border-gray-300 hover:bg-gray-100

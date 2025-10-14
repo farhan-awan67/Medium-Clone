@@ -9,14 +9,22 @@ import {
   registerUser,
   toggleBookmarkPost,
   toggleFollowUser,
+  updateUserProfile,
   userNotifications,
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../middlewares/auth.js";
+import upload from "../middlewares/multer.js";
 
 // register route
-router.post("/register", registerUser);
+router.post("/signup", registerUser);
 router.post("/login", loginUser);
 router.get("/profile", verifyToken, getUserProfile);
+router.post(
+  "/profile",
+  verifyToken,
+  upload.single("avatarUrl"),
+  updateUserProfile
+);
 router.post("/logout", logoutUser);
 router.put("/follow/:id", verifyToken, toggleFollowUser);
 router.put("/bookmark/:id", verifyToken, toggleBookmarkPost);

@@ -40,10 +40,12 @@ export const registerUser = asyncHandler(async (req, res) => {
 
   const token = user.generateToken();
 
-  return res
-    .status(201)
-    .cookie("token", token, options)
-    .json({ success: true, message: "user register successfully", token });
+  return res.status(201).cookie("token", token, options).json({
+    success: true,
+    message: "user register successfully",
+    token,
+    user,
+  });
 });
 
 // login user
@@ -83,15 +85,22 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   const token = await user.generateToken();
 
-  return res
-    .status(200)
-    .cookie("token", token, options)
-    .json({ success: true, message: "login successfully", token });
+  // user to sent back
+  const userForUi = await User.findOne({ $or: [{ username }, { email }] });
+
+  return res.status(200).cookie("token", token, options).json({
+    success: true,
+    message: "login successfully",
+    token,
+    user: userForUi,
+  });
 });
 
 // user profile
 export const getUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.user;
+  const file = req.file;
+  // avatarUrl: file.path
 
   // lets find user in db
   const user = await User.findOne({ _id });
@@ -100,7 +109,35 @@ export const getUserProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  return res.status(200).json({ user });
+  return res.status(200).json({ success: true, user });
+});
+
+// update user profile
+// update user profile
+export const updateUserProfile = asyncHandler(async (req, res) => {
+  const { _id } = req.user; // assuming this is set by auth middleware
+  const file = req.file; // uploaded file
+  const { name, bio } = req.body;
+
+  // 1. Find the user
+  const user = await User.findById(_id);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // 2. Build update object
+  const updateFields = {
+    ...(name && { name }),
+    ...(bio && { bio }),
+    ...(file && { avatarUrl: file.path }), // avatarUrl is optional
+  };
+
+  // 3. Update user
+  const updatedUser = await User.findByIdAndUpdate(_id, updateFields, {
+    new: true,
+  });
+
+  return res.status(200).json({ success: true, user: updatedUser });
 });
 
 // logout user
@@ -268,7 +305,6 @@ export const userNotifications = asyncHandler(async (req, res) => {
     .sort({
       createdAt: -1,
     });
-  console.log(notifications);
   if (!notifications) {
     return res
       .status(404)

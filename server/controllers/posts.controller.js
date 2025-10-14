@@ -9,7 +9,6 @@ export const createPost = asyncHandler(async (req, res) => {
   const { title, bodyHtml, tags, status, bodyDoc } = req.body;
   const author = req.user._id;
   const file = req.file;
-  console.log(file);
 
   if (!title || !bodyHtml) {
     return res.status(400).json({ message: "Title and body are required" });
