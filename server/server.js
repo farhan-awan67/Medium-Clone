@@ -1,17 +1,15 @@
 const app = express();
+import cors from "cors";
+dotenv.config();
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/db.js";
 import userRoutes from "./routes/user.routes.js";
 import postRoutes from "./routes/posts.routes.js";
-import cors from "cors";
-dotenv.config();
+import commentRoute from "./routes/comments.route.js";
 
-// env config
-// if (process.env.NODE_ENV !== "production") {
-//   dotenv.config();
-// }
+
 
 const options = {
   origin: "http://localhost:5173",
@@ -29,6 +27,7 @@ const PORT = process.env.PORT || 3000;
 // routes
 app.use("/api/auth", userRoutes);
 app.use("/api", postRoutes);
+app.use("/api/post", commentRoute);
 
 app.listen(PORT, () => {
   connectDB();

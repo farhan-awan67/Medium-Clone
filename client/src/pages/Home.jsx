@@ -3,6 +3,7 @@ import TrendingTags from "../components/TrendingTags";
 import PostCard from "../components/PostCard";
 import { fetchPosts } from "../features/postSlice";
 import { useSelector, useDispatch } from "react-redux";
+import Loading from "../components/Loading";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -14,7 +15,7 @@ const Home = () => {
 
   // const tags = [...new Set(posts.flatMap((post) => post.tags || []))];
   if (!posts) {
-    return <p>Loading posts...</p>;
+    return <Loading className="w-9 h-9" />;
   }
 
   return (

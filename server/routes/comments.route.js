@@ -4,12 +4,13 @@ import {
   deleteComment,
   getCommentsByPost,
   updateComment,
-} from "../controllers/comments.controller";
+} from "../controllers/comments.controller.js";
+import { verifyToken } from "../middlewares/auth.js";
 const router = express.Router();
 
-router.get("/:postId", getCommentsByPost);
-router.post("/", protect, createComment);
-router.put("/:id", protect, updateComment);
-router.delete("/:id", protect, deleteComment);
+router.get("/:postId", verifyToken, getCommentsByPost);
+router.post("/:postId/comment", verifyToken, createComment);
+router.put("/comment/:id", verifyToken, updateComment);
+router.delete("/comment/:id", verifyToken, deleteComment);
 
 export default router;

@@ -12,7 +12,10 @@ const Navbar = () => {
 
   return (
     <nav className="border-b px-2.5 sm:px-15 flex justify-between items-center">
-      <h1 onClick={() => navigate("/")} className="text-[35px] font-bold">
+      <h1
+        onClick={() => navigate("/")}
+        className="text-[35px] font-bold cursor-pointer"
+      >
         WriteUp
       </h1>
       {/* navs */}
@@ -40,9 +43,7 @@ const Navbar = () => {
           </div>
         ) : (
           <button
-            onClick={() => (
-              dispatch(toggleLogin(!showLogin))
-            )}
+            onClick={() => dispatch(toggleLogin(!showLogin))}
             className="cursor-pointer px-8 py-2 bg-[#000000]  transition text-white rounded-full"
           >
             Login

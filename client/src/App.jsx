@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import { useDispatch } from "react-redux";
 import { toggleLogin } from "./features/uiSlice";
 import { getCurrentUser } from "./features/authSlice";
+import Loading from "./components/Loading";
 
 const App = () => {
   const dispatch = useDispatch();

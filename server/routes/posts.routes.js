@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createPost,
+  deletePost,
   getAllPosts,
   singlePost,
   toggleLikes,
@@ -20,8 +21,8 @@ router.post(
 );
 router.get("/posts", getAllPosts);
 router.get("/posts/:slug", singlePost);
-router.put("/update-post/:slug", updatePost);
-router.put("/posts/:id/like", toggleLikes);
-router.delete("/delete-post/:slug", updatePost);
+router.put("/update-post/:slug", verifyToken, updatePost);
+router.put("/posts/:id/like", verifyToken, toggleLikes);
+router.delete("/delete-post/:slug", verifyToken, deletePost);
 
 export default router;

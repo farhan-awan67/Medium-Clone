@@ -209,17 +209,17 @@ export const toggleFollowUser = asyncHandler(async (req, res) => {
 
     // 🔌 OPTIONAL: Emit socket event (see below)
     // 🔌 Emit Socket.IO follow notification
-    const targetSocketId = onlineUsers.get(targetUserId.toString());
-    if (targetSocketId) {
-      io.to(targetSocketId).emit("new-notification", {
-        type: "follow",
-        actor: {
-          _id: userId,
-          username: me.username,
-        },
-        createdAt: new Date(),
-      });
-    }
+    // const targetSocketId = onlineUsers.get(targetUserId.toString());
+    // if (targetSocketId) {
+    //   io.to(targetSocketId).emit("new-notification", {
+    //     type: "follow",
+    //     actor: {
+    //       _id: userId,
+    //       username: me.username,
+    //     },
+    //     createdAt: new Date(),
+    //   });
+    // }
 
     return res.status(200).json({
       success: true,

@@ -1,10 +1,8 @@
-import Comments from "../models/comments.model";
-import Post from "../models/post.model";
-
-import { io } from "../server.js"; // wherever your socket server is
-import Comments from "../models/commentsModel.js";
-import Post from "../models/postModel.js";
-import Notifications from "../models/notificationModel.js";
+// import { io } from "../server.js"; // wherever your socket server is
+import Comments from "../models/comments.model.js";
+import Post from "../models/post.model.js";
+import Notifications from "../models/notifications.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // POST /api/comments
 export const createComment = asyncHandler(async (req, res) => {
@@ -24,12 +22,19 @@ export const createComment = asyncHandler(async (req, res) => {
   });
   await comment.save();
 
-  const populatedComment = await Comments.findById(comment._id).populate(
-    "author",
-    "username avatar"
+  // increment comment count
+  const updatedPost = await Post.findByIdAndUpdate(
+    postId,
+    { $inc: { commentCount: 1 } },
+    { new: true }
   );
 
-  io.emit("comment:new", populatedComment);
+  const populatedComment = await Comments.findById(comment._id).populate(
+    "author",
+    "username avatarUrl"
+  );
+
+  // io.emit("comment:new", populatedComment);
 
   // 🔔 Notification logic
   let recipient = null;
@@ -56,13 +61,17 @@ export const createComment = asyncHandler(async (req, res) => {
     });
     await notification.save();
 
-    const recipientSocket = onlineUsers.get(recipient.toString());
-    if (recipientSocket) {
-      io.to(recipientSocket).emit("notification:new", notification);
-    }
+    // const recipientSocket = onlineUsers.get(recipient.toString());
+    // if (recipientSocket) {
+    //   io.to(recipientSocket).emit("notification:new", notification);
+    // }
   }
 
-  res.status(201).json({ success: true, comment: populatedComment });
+  res.status(201).json({
+    success: true,
+    comment: populatedComment,
+    commentCount: updatedPost.commentCount,
+  });
 });
 
 // GET /api/comments/:postId
@@ -70,7 +79,7 @@ export const getCommentsByPost = asyncHandler(async (req, res) => {
   const postId = req.params.postId;
 
   const comments = await Comments.find({ post: postId, parent: null })
-    .populate("author", "username avatar")
+    .populate("author", "username avatarUrl")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -93,7 +102,7 @@ export const getCommentsByPost = asyncHandler(async (req, res) => {
     replies: repliesMap[comment._id.toString()] || [],
   }));
 
-  res.status(200).json({ success: true, comments: result });
+  res.status(200).json({ success: true, comments });
 });
 
 // PUT /api/comments/:id
@@ -118,11 +127,11 @@ export const updateComment = asyncHandler(async (req, res) => {
 
   const updatedComment = await Comments.findById(commentId).populate(
     "author",
-    "username avatar"
+    "username avatarUrl"
   );
 
   // Emit socket event
-  io.emit("comment:update", updatedComment);
+  // io.emit("comment:update", updatedComment);
 
   res.status(200).json({
     success: true,
@@ -147,16 +156,35 @@ export const deleteComment = asyncHandler(async (req, res) => {
     return res.status(403).json({ success: false, message: "Not authorized" });
   }
 
-  // Delete all replies
-  await Comments.deleteMany({ parent: commentId });
+  // Count replies
+  const replyCount = await Comments.countDocuments({ parent: commentId });
 
-  // Delete the original comment
-  await comment.deleteOne();
+  // Delete replies and original comment
+  await Comments.deleteMany({
+    $or: [{ _id: commentId }, { parent: commentId }],
+  });
 
-  // Emit socket event
-  io.emit("comment:delete", commentId);
+  // also delete all  notifications related to comment
+  await Notifications.deleteMany({ comment: commentId });
 
-  res
-    .status(200)
-    .json({ success: true, message: "Comment and replies deleted" });
+  // Decrement comment count
+  const updatedPost = await Post.findByIdAndUpdate(
+    comment.post,
+    { $inc: { commentCount: -(replyCount + 1) } },
+    { new: true }
+  );
+
+  if (!updatedPost) {
+    return res.json({
+      success: false,
+      message: "❌ Post not found or comment count update failed",
+    });
+  } else {
+    console.log("✅ Updated post:", updatedPost.commentCount);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Comment and replies deleted",
+  });
 });

@@ -1,24 +1,70 @@
 // components/PostCard.jsx
-import React from "react";
-import {
-  HeartIcon,
-  ChatBubbleLeftIcon,
-  BookmarkIcon,
-} from "@heroicons/react/24/outline";
+import { ChatBubbleLeftIcon, BookmarkIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
+import { HeartIcon as OutlineHeartIcon } from "@heroicons/react/24/outline";
+
 import { Link } from "react-router-dom";
 import dayjs from "../utils/dayjs";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  getComments,
+  toggleFollow,
+  toggleLikes,
+} from "../features/interactions";
+import { useEffect, useRef, useState } from "react";
+import CommentInput from "../components/CommentInput";
+import CommentsSection from "./CommentsSection";
 
 const PostCard = ({ post }) => {
+  const { followStatus, likesStatus, commentsByPost } = useSelector(
+    (state) => state.interactions
+  );
+  const dispatch = useDispatch();
   // inside your component
   const timeAgo = dayjs(post.createdAt).fromNow(); // e.g., "2 hours ago"
+  const isFollowing = followStatus?.isFollowing;
+  const isLiked = likesStatus?.like ?? post.isLiked;
+  const likeCount = likesStatus?.likeCount ?? post.likes.length;
+  const comments = commentsByPost[post._id] || [];
+  const commentCounts = comments?.length || post?.commentCount || 0;
 
-  // if following true then stying
-  // bg-white text-gray-700 border-gray-300 hover:bg-gray-100
+  const [comment, setShowComment] = useState(false);
+  const commentRef = useRef(null);
+
+  // follow unfollow user
+  const followUnfollow = (e) => {
+    e.preventDefault();
+    dispatch(toggleFollow({ id: post.author._id.toString() }));
+  };
+
+  // like unlike user
+  const userLike = (e) => {
+    e.preventDefault();
+    dispatch(toggleLikes({ id: post._id?.toString() }));
+  };
+
+  useEffect(() => {
+    if (comment && commentRef.current) {
+      const yOffset = -190; // adjust this offset as needed (e.g., -50, -150)
+      const y =
+        commentRef.current.getBoundingClientRect().top +
+        window.pageYOffset +
+        yOffset;
+
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  }, [comment]);
+
+  useEffect(() => {
+    console.log("from use effect");
+    console.log(post._id);
+    dispatch(getComments({ postId: post._id }));
+  }, [dispatch, post._id]);
 
   return (
     <Link
       to={`/post/${post.slug}`}
-      className="bg-white rounded-md shadow p-6 mb-6"
+      className="block rounded-md shadow p-6 mb-6 bg-white"
     >
       {/* Author Section */}
       <div className="flex items-center mb-4">
@@ -31,8 +77,11 @@ const PostCard = ({ post }) => {
           <p className="text-sm font-semibold">{post.author.username}</p>
           <p className="text-xs text-gray-500">{timeAgo}</p>
         </div>
-        <button className="ml-auto  bg-black text-white border-black hover:bg-gray-800">
-          follow
+        <button
+          onClick={(e) => followUnfollow(e)}
+          className="ml-auto text-black cursor-pointer"
+        >
+          {isFollowing ? "follow +" : "unfollow"}
         </button>
       </div>
 
@@ -45,24 +94,48 @@ const PostCard = ({ post }) => {
         <img
           src={post.coverImage}
           alt="Post"
-          className="w-full h-64 object-cover rounded mb-4"
+          className="w-full h-64 object-cover rounded mb-4 border border-zinc-100"
         />
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-6 text-gray-600">
-        <button className="flex items-center gap-1 hover:text-red-500">
-          <HeartIcon className="w-5 h-5 cursor-pointer" />
-          <span>{post.likes.length}</span>
+      <div
+        onClick={(e) => e.preventDefault()}
+        className="flex items-center gap-6 text-gray-600"
+      >
+        <button
+          onClick={(e) => userLike(e)}
+          className="flex items-center gap-1 hover:text-red-500"
+        >
+          {isLiked ? (
+            <SolidHeartIcon className="w-5 h-5 cursor-pointer" />
+          ) : (
+            <OutlineHeartIcon className="w-5 h-5 cursor-pointer" />
+          )}
+
+          <span>{likeCount}</span>
         </button>
-        <button className="flex items-center gap-1 hover:text-blue-500">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setShowComment(!comment);
+          }}
+          className="flex items-center gap-1 hover:text-blue-500"
+        >
           <ChatBubbleLeftIcon className="w-5 h-5 cursor-pointer" />
-          <span>{post.commentCount}</span>
+          <span>{commentCounts}</span>
         </button>
         <button className="ml-auto hover:text-yellow-500">
           <BookmarkIcon className="w-5 h-5 cursor-pointer" />
         </button>
       </div>
+      {comment ? (
+        <div ref={commentRef}>
+          <CommentsSection postId={post._id} comments={comments} />
+        </div>
+      ) : (
+        ""
+      )}
     </Link>
   );
 };

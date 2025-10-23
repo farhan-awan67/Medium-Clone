@@ -113,14 +113,14 @@ export const toggleLikes = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Post not found" });
   }
 
-  const isLiked = post.likes.includes(userId);
+  let isLiked = post.likes.includes(userId);
 
   if (isLiked) {
     post.likes.pull(userId);
   } else {
     post.likes.push(userId);
 
-    if (!userId.equals(post.author)) {
+    if (userId !== post.author.toString()) {
       const notifications = new Notifications({
         user: post.author,
         actor: userId,
@@ -134,10 +134,13 @@ export const toggleLikes = asyncHandler(async (req, res) => {
   }
 
   await post.save();
+  // Update isLiked AFTER toggling
+  isLiked = post.likes.includes(userId);
 
   res.status(200).json({
     success: true,
     message: isLiked ? "Post unliked" : "Post liked",
+    like: isLiked,
     likeCount: post.likes.length,
   });
 });

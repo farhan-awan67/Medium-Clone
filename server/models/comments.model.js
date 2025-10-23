@@ -8,9 +8,17 @@ const commentsSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     body: { type: String, required: true },
-    parent: { type: mongoose.Schema.Types.ObjectId, ref: "Comment", default: null },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
+    },
   },
   { timestamps: true }
 );

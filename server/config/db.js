@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
-import { asyncHandler } from "../utils/asyncHandler.js";
 
-const connectDB = asyncHandler(async () => {
-  await mongoose.connect(process.env.MONGO_ATLAS_URI);
-  console.log("DB connected successfully");
-});
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_ATLAS_URI);
+    console.log("DB connected successfully");
+  } catch (err) {
+    console.error("MongoDB connection failed:", err.message);
+    process.exit(1); // Exit process with failure
+  }
+};
 
 export default connectDB;
