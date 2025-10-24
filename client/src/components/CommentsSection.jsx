@@ -20,9 +20,6 @@ const CommentsSection = ({ postId, comments }) => {
   };
 
   const saveNewComment = (id) => {
-    console.log("save btn clicked");
-    console.log(id);
-    console.log(updatedComment);
     dispatch(updateComment({ id, body: updatedComment }));
     setUpdatedComment("");
     setEditId(null);

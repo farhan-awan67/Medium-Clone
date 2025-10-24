@@ -1,12 +1,15 @@
 // components/PostCard.jsx
-import { ChatBubbleLeftIcon, BookmarkIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
 import { HeartIcon as OutlineHeartIcon } from "@heroicons/react/24/outline";
+import { BookmarkIcon } from "@heroicons/react/24/solid";
+import { BookmarkIcon as NotFilled } from "@heroicons/react/24/outline";
 
 import { Link } from "react-router-dom";
 import dayjs from "../utils/dayjs";
 import { useSelector, useDispatch } from "react-redux";
 import {
+  addBookmark,
   getComments,
   toggleFollow,
   toggleLikes,
@@ -16,9 +19,10 @@ import CommentInput from "../components/CommentInput";
 import CommentsSection from "./CommentsSection";
 
 const PostCard = ({ post }) => {
-  const { followStatus, likesStatus, commentsByPost } = useSelector(
+  const { followStatus, likesStatus, commentsByPost, bookmark } = useSelector(
     (state) => state.interactions
   );
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   // inside your component
   const timeAgo = dayjs(post.createdAt).fromNow(); // e.g., "2 hours ago"
@@ -27,6 +31,8 @@ const PostCard = ({ post }) => {
   const likeCount = likesStatus?.likeCount ?? post.likes.length;
   const comments = commentsByPost[post._id] || [];
   const commentCounts = comments?.length || post?.commentCount || 0;
+  const isBookmarked =
+    bookmark?.[post?._id] ?? post?.bookmarks?.includes(user?._id);
 
   const [comment, setShowComment] = useState(false);
   const commentRef = useRef(null);
@@ -43,6 +49,11 @@ const PostCard = ({ post }) => {
     dispatch(toggleLikes({ id: post._id?.toString() }));
   };
 
+  // toggleBookmark
+  const toggleBookmark = (id) => {
+    dispatch(addBookmark({ id }));
+  };
+
   useEffect(() => {
     if (comment && commentRef.current) {
       const yOffset = -190; // adjust this offset as needed (e.g., -50, -150)
@@ -56,8 +67,6 @@ const PostCard = ({ post }) => {
   }, [comment]);
 
   useEffect(() => {
-    console.log("from use effect");
-    console.log(post._id);
     dispatch(getComments({ postId: post._id }));
   }, [dispatch, post._id]);
 
@@ -125,8 +134,15 @@ const PostCard = ({ post }) => {
           <ChatBubbleLeftIcon className="w-5 h-5 cursor-pointer" />
           <span>{commentCounts}</span>
         </button>
-        <button className="ml-auto hover:text-yellow-500">
-          <BookmarkIcon className="w-5 h-5 cursor-pointer" />
+        <button
+          onClick={() => toggleBookmark(post._id.toString())}
+          className="ml-auto hover:text-yellow-500"
+        >
+          {isBookmarked ? (
+            <BookmarkIcon className="h-6 w-6 text-black cursor-pointer" />
+          ) : (
+            <NotFilled className="w-5 h-5 cursor-pointer inset-0" />
+          )}
         </button>
       </div>
       {comment ? (

@@ -254,6 +254,14 @@ export const toggleBookmarkPost = asyncHandler(async (req, res) => {
     await me.save();
     await post.save();
 
+    // Remove bookmark notification
+    await Notifications.deleteOne({
+      user: post.author._id, // the author
+      actor: userId, // the one who unbookmarked
+      post: postId,
+      type: "bookmark",
+    });
+
     return res.status(200).json({
       success: true,
       message: "Post unbookmarked",

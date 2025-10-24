@@ -90,15 +90,30 @@ export const deleteComment = createAsyncThunk(
   }
 );
 
+// bookmark
+export const addBookmark = createAsyncThunk(
+  "user/bookmarks",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      console.log("inside bookmark thunk");
+      const res = await api.put(`/api/auth/bookmark/${id}`);
+      console.log(res.data.isBookmarked);
+      return { postId: id, bookmarked: res.data.isBookmarked };
+    } catch (error) {
+      rejectWithValue(error);
+      console.log(error);
+    }
+  }
+);
+
 const initialState = {
   followStatus: {},
   likesStatus: {},
   commentsByPost: {},
+  bookmark: null,
   loading: "",
   error: "",
 };
-
-console.log("from slice", initialState.commentsByPost);
 
 const interactionSlice = createSlice({
   name: "interactions",
@@ -185,6 +200,19 @@ const interactionSlice = createSlice({
         state.error = "";
       })
       .addCase(deleteComment.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // handle bookmarks
+      .addCase(addBookmark.pending, (state) => {
+        state.loading = "loading";
+      })
+      .addCase(addBookmark.fulfilled, (state, action) => {
+        const { postId, bookmarked } = action.payload;
+        if (!state.bookmark) state.bookmark = {};
+        state.bookmark[postId] = bookmarked;
+      })
+      .addCase(addBookmark.rejected, (state, action) => {
         state.error = action.payload;
       });
   },
