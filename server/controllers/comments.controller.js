@@ -165,7 +165,7 @@ export const deleteComment = asyncHandler(async (req, res) => {
   });
 
   // also delete all  notifications related to comment
-  await Notifications.deleteMany({ comment: commentId });
+  await Notifications.deleteMany({ comment: commentId, type: "comment" });
 
   // Decrement comment count
   const updatedPost = await Post.findByIdAndUpdate(

@@ -308,8 +308,8 @@ export const toggleBookmarkPost = asyncHandler(async (req, res) => {
 export const userNotifications = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   //  find user notifications and validate
-  const notifications = await Notifications.find({ user: userId })
-    .populate("actor", "username name")
+  const notifications = await Notifications.find({ user: userId, read: false })
+    .populate("actor", "username avatarUrl")
     .sort({
       createdAt: -1,
     });

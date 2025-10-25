@@ -1,17 +1,48 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Navbar from "./components/Navbar";
 import SpecificPost from "./pages/SpecificPost";
 import ProfilePage from "./pages/ProfilePage";
-import { useDispatch } from "react-redux";
-import { toggleLogin } from "./features/uiSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "./features/authSlice";
-import Loading from "./components/Loading";
+import {
+  addNotification,
+  getAllUnreadNotifications,
+} from "./features/notificationsSlice";
+import socket from "./socket";
 
 const App = () => {
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  // notifications
+  useEffect(() => {
+    // if not
+    if (!user?._id) return;
+    // get all notifications
+    dispatch(getAllUnreadNotifications);
+
+    socket.connect();
+    // when frontend connect backend successfully
+    socket.on("connect", () => {
+      console.log("frontend connectes backend socket");
+      socket.emit("register", user?._id);
+    });
+
+    // when receive notification from backend
+    socket.on("notification", (notification) => {
+      // add the new notification to existing notification array
+      dispatch(addNotification(notification));
+      toast.success(
+        `${notification?.username} ${notification?.type} your post`
+      );
+    });
+
+    return () => socket.disconnect();
+  }, [dispatch, user?._id]);
+
   useEffect(() => {
     if (localStorage.getItem("token")) {
       dispatch(getCurrentUser());

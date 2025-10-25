@@ -3,6 +3,7 @@ import Post from "../models/post.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Tags from "../models/tags.model.js";
 import Notifications from "../models/notifications.model.js";
+import { sendNotification } from "../server.js";
 
 // create post
 export const createPost = asyncHandler(async (req, res) => {
@@ -121,7 +122,7 @@ export const toggleLikes = asyncHandler(async (req, res) => {
     post.likes.push(userId);
 
     if (userId !== post.author.toString()) {
-      const notifications = new Notifications({
+      const newNotification = new Notifications({
         user: post.author,
         actor: userId,
         type: "like",
@@ -129,7 +130,11 @@ export const toggleLikes = asyncHandler(async (req, res) => {
         comment: null,
         read: false,
       });
-      await notifications.save();
+      await newNotification.save();
+      const notification = await Notifications.findById(newNotification._id)
+        .populate("user", "username avatarUrl")
+        .populate("post", "title");
+      sendNotification(post.author.toString(), notification);
     }
   }
 
