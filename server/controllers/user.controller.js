@@ -113,7 +113,6 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 // update user profile
-// update user profile
 export const updateUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.user; // assuming this is set by auth middleware
   const file = req.file; // uploaded file

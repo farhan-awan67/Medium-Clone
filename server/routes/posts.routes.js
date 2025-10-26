@@ -14,7 +14,7 @@ const router = express.Router();
 
 // posts routes
 router.post(
-  "/create-post",
+  "/posts/create-post",
   upload.single("coverImage"),
   verifyToken,
   createPost

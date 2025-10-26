@@ -1,13 +1,28 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import api from "../utils/api";
 
+// add new post
+export const addNewPost = createAsyncThunk(
+  "posts/newPost",
+  async ({ formData }, { rejectWithValue }) => {
+    try {
+      console.log("inside add new post thunk", formData);
+      const res = await api.post(`/api/posts/create-post`, formData);
+      return res.data.post;
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+// get posts
 export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_SERVER_API}/api/posts`
-      );
+      const res = await api.get(`/api/posts`);
       const { posts } = res.data;
       return posts; // goes to fulfilled
     } catch (err) {
@@ -15,8 +30,6 @@ export const fetchPosts = createAsyncThunk(
     }
   }
 );
-
-
 
 const initialState = {
   posts: [],
@@ -37,6 +50,17 @@ const PostSlice = createSlice({
         state.posts = action.payload;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // new post
+      .addCase(addNewPost.pending, (state) => {
+        state.loading = "loading..";
+      })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        state.posts.unshift(action.payload);
+      })
+      .addCase(addNewPost.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

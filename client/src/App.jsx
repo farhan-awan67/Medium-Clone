@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Navbar from "./components/Navbar";
 import SpecificPost from "./pages/SpecificPost";
 import ProfilePage from "./pages/ProfilePage";
+import NewPost from "./pages/NewPost";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "./features/authSlice";
 import {
@@ -56,6 +57,7 @@ const App = () => {
 
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/new-post" element={<NewPost />} />
         <Route path="/post/:slug" element={<SpecificPost />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>

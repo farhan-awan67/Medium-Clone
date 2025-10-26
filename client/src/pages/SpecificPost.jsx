@@ -17,6 +17,15 @@ const SpecificPost = () => {
   return (
     post && (
       <div className="max-w-3xl mx-auto px-4 py-10">
+        {/* Cover Image */}
+        <div className="mb-8">
+          <img
+            src={post.coverImage}
+            alt="Post"
+            className="w-full rounded-lg shadow-sm"
+          />
+        </div>
+
         {/* Author Section */}
         <div className="flex items-center mb-6">
           <img
@@ -30,8 +39,8 @@ const SpecificPost = () => {
             </p>
             <p className="text-gray-500 text-xs">{timeAgo}</p>
           </div>
-          <button className="ml-auto  bg-black text-white border-black hover:bg-gray-800">
-            follow
+          <button className="ml-auto bg-black text-white px-4 py-1 rounded hover:bg-gray-800">
+            Follow
           </button>
         </div>
 
@@ -39,18 +48,10 @@ const SpecificPost = () => {
         <h1 className="text-3xl sm:text-4xl font-bold mb-6 leading-snug">
           {post.title}
         </h1>
+
         {/* Content */}
         <div className="prose prose-base sm:prose-lg lg:prose-xl max-w-none dark:prose-invert mb-10">
-          <p>{post.bodyHtml}</p>
-        </div>
-
-        {/* Featured Image */}
-        <div className="mb-8">
-          <img
-            src={post.coverImage}
-            alt="Post"
-            className="w-full rounded-lg shadow-sm"
-          />
+          <p dangerouslySetInnerHTML={{ __html: post.bodyHtml }}></p>
         </div>
 
         {/* Interaction Buttons */}

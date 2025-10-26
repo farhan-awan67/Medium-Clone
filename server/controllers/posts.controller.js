@@ -5,22 +5,40 @@ import Tags from "../models/tags.model.js";
 import Notifications from "../models/notifications.model.js";
 import { sendNotification } from "../server.js";
 
+// const calculateReadTime = (text) => {
+//   // Remove HTML tags if bodyHtml is used
+//   const plainText = text.replace(/<[^>]+>/g, "");
+//   const words = plainText.trim().split(/\s+/).length; // count words
+//   const wordsPerMinute = 200; // average reading speed
+//   const minutes = Math.ceil(words / wordsPerMinute);
+//   return minutes;
+// };
+
 // create post
 export const createPost = asyncHandler(async (req, res) => {
-  const { title, bodyHtml, tags, status, bodyDoc } = req.body;
+  const { title, bodyHtml, tags, status } = req.body;
   const author = req.user._id;
   const file = req.file;
+  const tagsArray = tags.split(",").map((tag) => tag.trim());
 
   if (!title || !bodyHtml) {
     return res.status(400).json({ message: "Title and body are required" });
   }
+  // Generate excerpt from HTML
+  const stripHtml = bodyHtml.replace(/<[^>]+>/g, ""); // remove HTML tags
+  const excerpt =
+    stripHtml.length > 200 ? stripHtml.substring(0, 200) + "..." : stripHtml;
+
+  // Calculate read time
+  // const readTime = calculateReadTime(bodyHtml);
+
   const post = new Post({
     title,
     bodyHtml,
-    tags,
+    tags: tagsArray,
     status,
+    excerpt,
     author,
-    bodyDoc,
     coverImage: file.path,
   });
 

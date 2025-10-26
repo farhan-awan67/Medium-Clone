@@ -34,7 +34,7 @@ const Navbar = () => {
       {/* nav items */}
       <div className="flex items-center gap-8 font-medium">
         {/* Write Post */}
-        <NavLink to="/write" className="hover:text-[#007aff]">
+        <NavLink to="/new-post" className="hover:text-[#007aff]">
           Write Post
         </NavLink>
 

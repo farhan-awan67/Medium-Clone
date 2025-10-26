@@ -96,7 +96,7 @@ const PostCard = ({ post }) => {
 
       {/* Content */}
       <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-      <p className="text-gray-700 mb-4">{post.bodyHtml}</p>
+      <p className="text-gray-700 mb-4">{post.excerpt}</p>
 
       {/* Image */}
       {post.coverImage && (
