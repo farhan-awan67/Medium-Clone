@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { useDispatch } from "react-redux";
-import { addNewPost } from "../features/postSlice";
+import { addNewPost, fetchPosts, saveDraftPost } from "../features/postSlice";
 
 const NewPost = () => {
   const dispath = useDispatch();
@@ -56,7 +56,17 @@ const NewPost = () => {
       console.log(pair[0], pair[1]);
     }
 
-    dispath(addNewPost({ formData }));
+    if (status === "published") {
+      dispath(addNewPost({ formData }));
+    } else {
+      dispath(saveDraftPost({ formData }));
+    }
+    setTitle("");
+    setBodyHtml("");
+    setTags("");
+    setStatus("");
+    setCoverImage(null);
+    setPreview(null);
   };
 
   // body change
@@ -275,7 +285,7 @@ const NewPost = () => {
               type="submit"
               className="px-5 py-2 cursor-pointer bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
             >
-              Publish Post
+              {status === "publish" ? "Publish Post" : "Save as Draft"}
             </button>
           </div>
         </form>

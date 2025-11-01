@@ -38,6 +38,11 @@ const Navbar = () => {
           Write Post
         </NavLink>
 
+        {/* draft posts */}
+        <NavLink to="/draft-posts" className="hover:text-[#007aff]">
+          Draft Posts
+        </NavLink>
+
         {/* Notifications */}
         {token && (
           <div className="relative">
@@ -47,7 +52,7 @@ const Navbar = () => {
             >
               <span className="text-md">🔔</span>
               {userNotifications?.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-[5px] py-[1px]">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-[5px] py-px">
                   {userNotifications.length}
                 </span>
               )}
@@ -55,7 +60,7 @@ const Navbar = () => {
 
             {/* Dropdown */}
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-[280px] bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-[320px] overflow-y-auto">
+              <div className="absolute right-0 mt-2 w-[280px] bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-80 overflow-y-auto">
                 {userNotifications.length === 0 ? (
                   <p className="text-gray-500 text-sm p-4 text-center">
                     No new notifications

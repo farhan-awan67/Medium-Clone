@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import api from "../utils/api";
 
 // add new post
@@ -17,6 +16,21 @@ export const addNewPost = createAsyncThunk(
   }
 );
 
+// draft post
+export const saveDraftPost = createAsyncThunk(
+  "post/draftPost",
+  async ({ formData }, { rejectWithValue }) => {
+    try {
+      console.log("inside draft post thunk", formData);
+      const res = await api.post(`/api/posts/draft-post`, formData);
+      return res.data.post;
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 // get posts
 export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
@@ -25,8 +39,38 @@ export const fetchPosts = createAsyncThunk(
       const res = await api.get(`/api/posts`);
       const { posts } = res.data;
       return posts; // goes to fulfilled
-    } catch (err) {
-      return rejectWithValue(err.response.data.message);
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+// publish post
+export const makePostPublished = createAsyncThunk(
+  "posts/publish",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const res = await api.patch(`/api/posts/publish/${id}`);
+      return { id, post: res.data.post };
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+// delete post
+export const deletePostBySlug = createAsyncThunk(
+  "posts/delete",
+  async ({ slug }, { rejectWithValue }) => {
+    try {
+      const res = await api.delete(`/api/posts/delete-post/${slug}`);
+      const { posts } = res.data;
+      return posts; // goes to fulfilled
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
@@ -44,7 +88,7 @@ const PostSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchPosts.pending, (state) => {
-        state.loading = "loading..";
+        state.loading = true;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
         state.posts = action.payload;
@@ -61,6 +105,36 @@ const PostSlice = createSlice({
         state.posts.unshift(action.payload);
       })
       .addCase(addNewPost.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // draft post
+      .addCase(saveDraftPost.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(saveDraftPost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posts.unshift(action.payload);
+      })
+      .addCase(saveDraftPost.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // make post publish
+      .addCase(makePostPublished.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(makePostPublished.fulfilled, (state, action) => {
+        state.loading = false;
+        const { id, post } = action.payload;
+
+        // Remove the draft
+        state.posts = state.posts.filter((p) => p._id !== id);
+
+        // Add the new published version
+        state.posts.unshift(post);
+      })
+      .addCase(makePostPublished.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

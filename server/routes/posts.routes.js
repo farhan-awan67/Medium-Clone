@@ -2,7 +2,9 @@ import express from "express";
 import {
   createPost,
   deletePost,
+  draftPost,
   getAllPosts,
+  makePostPublish,
   singlePost,
   toggleLikes,
   updatePost,
@@ -19,10 +21,17 @@ router.post(
   verifyToken,
   createPost
 );
-router.get("/posts", getAllPosts);
-router.get("/posts/:slug", singlePost);
+router.post(
+  "/posts/draft-post",
+  upload.single("coverImage"),
+  verifyToken,
+  draftPost
+);
+router.get("/", getAllPosts);
+router.get("/:slug", singlePost);
 router.put("/update-post/:slug", verifyToken, updatePost);
-router.put("/posts/:id/like", verifyToken, toggleLikes);
+router.patch("/publish/:id", verifyToken, makePostPublish);
+router.put("/:id/like", verifyToken, toggleLikes);
 router.delete("/delete-post/:slug", verifyToken, deletePost);
 
 export default router;

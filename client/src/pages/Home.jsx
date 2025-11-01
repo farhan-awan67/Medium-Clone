@@ -9,19 +9,21 @@ const Home = () => {
   const dispatch = useDispatch();
   const { posts, loading, error } = useSelector((state) => state.posts);
 
+  const publishedPosts = posts?.filter((post) => post.status === "published");
+
   useEffect(() => {
     dispatch(fetchPosts());
   }, []);
 
   // const tags = [...new Set(posts.flatMap((post) => post.tags || []))];
-  if (!posts) {
+  if (!publishedPosts) {
     return <Loading className="w-9 h-9" />;
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* <TrendingTags tags={tags} /> */}
-      {posts.map((post) => (
+      {publishedPosts.map((post) => (
         <PostCard key={post._id} post={post} />
       ))}
     </div>

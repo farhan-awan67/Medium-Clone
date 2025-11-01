@@ -13,6 +13,7 @@ import {
   getAllUnreadNotifications,
 } from "./features/notificationsSlice";
 import socket from "./socket";
+import DraftPosts from "./pages/DraftPosts";
 
 const App = () => {
   const { user } = useSelector((state) => state.auth);
@@ -60,6 +61,7 @@ const App = () => {
         <Route path="/new-post" element={<NewPost />} />
         <Route path="/post/:slug" element={<SpecificPost />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/draft-posts" element={<DraftPosts />} />
       </Routes>
     </div>
   );

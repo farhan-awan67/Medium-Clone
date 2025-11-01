@@ -68,7 +68,7 @@ app.set("io", io);
 
 // Routes
 app.use("/api/auth", userRoutes);
-app.use("/api", postRoutes);
+app.use("/api/posts", postRoutes);
 app.use("/api/post", commentRoute);
 app.use("/api/notifications", notificationsRoute);
 

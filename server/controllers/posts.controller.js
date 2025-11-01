@@ -1,4 +1,3 @@
-import slugify from "slugify";
 import Post from "../models/post.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Tags from "../models/tags.model.js";
@@ -19,7 +18,18 @@ export const createPost = asyncHandler(async (req, res) => {
   const { title, bodyHtml, tags, status } = req.body;
   const author = req.user._id;
   const file = req.file;
-  const tagsArray = tags.split(",").map((tag) => tag.trim());
+  let tagsArray = [];
+
+  if (typeof tags === "string" && tags.trim() !== "") {
+    tagsArray = tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean); // "writing" → ["writing"]
+  } else if (tags) {
+    tagsArray = [tags]; // fallback if somehow tags is a single non-string value
+  } else {
+    tagsArray = []; // safe empty if nothing provided
+  }
 
   if (!title || !bodyHtml) {
     return res.status(400).json({ message: "Title and body are required" });
@@ -67,9 +77,89 @@ export const createPost = asyncHandler(async (req, res) => {
     .json({ success: true, message: "post created successfully", post });
 });
 
+// draft post
+export const draftPost = asyncHandler(async (req, res) => {
+  const { title, bodyHtml, tags, status } = req.body;
+  const author = req.user._id;
+  const file = req.file;
+  let tagsArray = [];
+
+  if (typeof tags === "string" && tags.trim() !== "") {
+    tagsArray = tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean); // "writing" → ["writing"]
+  } else if (tags) {
+    tagsArray = [tags]; // fallback if somehow tags is a single non-string value
+  } else {
+    tagsArray = []; // safe empty if nothing provided
+  }
+
+  if (!title || !bodyHtml) {
+    return res.status(400).json({ message: "Title and body are required" });
+  }
+  // Generate excerpt from HTML
+  const stripHtml = bodyHtml.replace(/<[^>]+>/g, ""); // remove HTML tags
+  const excerpt =
+    stripHtml.length > 200 ? stripHtml.substring(0, 200) + "..." : stripHtml;
+
+  // Calculate read time
+  // const readTime = calculateReadTime(bodyHtml);
+
+  const post = new Post({
+    title,
+    bodyHtml,
+    tags: tagsArray,
+    status,
+    excerpt,
+    author,
+    coverImage: file.path,
+  });
+
+  await post.save();
+
+  if (tags && tags.length > 0) {
+    for (let tagName of tags) {
+      const slug = tagName.toLowerCase().replace(/\s+/g, "-");
+
+      const tag = await Tags.findOne({ slug });
+      if (tag) {
+        tag.postCount += 1;
+        await tag.save();
+      } else {
+        new Tags({
+          name: tagName,
+          slug,
+          postCount: 1,
+        });
+      }
+    }
+  }
+
+  res
+    .status(201)
+    .json({ success: true, message: "post saved to draft successfully", post });
+});
+
+// make post publish
+export const makePostPublish = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const post = await Post.findByIdAndUpdate(
+    id,
+    { status: "published" },
+    { new: true }
+  );
+  if (!post) {
+    return res.status(404).json({ success: false, message: "post not found." });
+  }
+
+  return res.status(200).json({ success: true, post });
+});
+
 // get all posts
 export const getAllPosts = asyncHandler(async (req, res) => {
-  const posts = await Post.find({ status: "published" })
+  const posts = await Post.find({})
     .populate("author", "username avatarUrl")
     .sort({ createdAt: -1 });
 
