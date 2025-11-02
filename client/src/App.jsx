@@ -8,12 +8,14 @@ import ProfilePage from "./pages/ProfilePage";
 import NewPost from "./pages/NewPost";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "./features/authSlice";
+import { Toaster } from "react-hot-toast";
 import {
   addNotification,
   getAllUnreadNotifications,
 } from "./features/notificationsSlice";
 import socket from "./socket";
 import DraftPosts from "./pages/DraftPosts";
+import EditPost from "./pages/EditPost";
 
 const App = () => {
   const { user } = useSelector((state) => state.auth);
@@ -53,6 +55,7 @@ const App = () => {
 
   return (
     <div className="bg-[#f7f4ed] w-full min-h-screen">
+      <Toaster />
       <Navbar />
       <Login />
 
@@ -62,6 +65,7 @@ const App = () => {
         <Route path="/post/:slug" element={<SpecificPost />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/draft-posts" element={<DraftPosts />} />
+        <Route path="/edit-post/:id" element={<EditPost />} />
       </Routes>
     </div>
   );

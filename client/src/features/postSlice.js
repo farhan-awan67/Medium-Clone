@@ -16,6 +16,21 @@ export const addNewPost = createAsyncThunk(
   }
 );
 
+// update post
+export const updatePost = createAsyncThunk(
+  "post/updatePost",
+  async ({ formData, slug }, { rejectWithValue }) => {
+    try {
+      console.log(slug, formData.entries())
+      const res = await api.put(`/api/posts/update-post/${slug}`, formData);
+      return { message: res.data.message, post: res.data.post };
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 // draft post
 export const saveDraftPost = createAsyncThunk(
   "post/draftPost",
@@ -105,6 +120,26 @@ const PostSlice = createSlice({
         state.posts.unshift(action.payload);
       })
       .addCase(addNewPost.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // update post
+      .addCase(updatePost.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        state.loading = false;
+        const { message, post } = action.payload;
+        // ✅ Find the index of the updated post
+        const index = state.posts.findIndex((p) => p._id === post._id);
+
+        if (index !== -1) {
+          // ✅ Replace the existing post with the updated one
+          state.posts[index] = post;
+        }
+      })
+      .addCase(updatePost.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
 

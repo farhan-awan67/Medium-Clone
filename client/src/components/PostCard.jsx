@@ -1,11 +1,14 @@
 // components/PostCard.jsx
-import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
+import {
+  ChatBubbleLeftIcon,
+  EllipsisVerticalIcon,
+} from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
 import { HeartIcon as OutlineHeartIcon } from "@heroicons/react/24/outline";
 import { BookmarkIcon } from "@heroicons/react/24/solid";
 import { BookmarkIcon as NotFilled } from "@heroicons/react/24/outline";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import dayjs from "../utils/dayjs";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -24,6 +27,7 @@ const PostCard = ({ post }) => {
   );
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   // inside your component
   const timeAgo = dayjs(post.createdAt).fromNow(); // e.g., "2 hours ago"
   const isFollowing = followStatus?.isFollowing;
@@ -36,6 +40,7 @@ const PostCard = ({ post }) => {
 
   const [comment, setShowComment] = useState(false);
   const commentRef = useRef(null);
+  const [postOptions, setPostOPtions] = useState(false);
 
   // follow unfollow user
   const followUnfollow = (e) => {
@@ -52,6 +57,13 @@ const PostCard = ({ post }) => {
   // toggleBookmark
   const toggleBookmark = (id) => {
     dispatch(addBookmark({ id }));
+  };
+
+  // post options
+  const showPostOptions = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPostOPtions(!postOptions);
   };
 
   useEffect(() => {
@@ -78,8 +90,8 @@ const PostCard = ({ post }) => {
       {/* Author Section */}
       <div className="flex items-center mb-4">
         <img
-          src={post?.authorImage}
-          alt={post.author}
+          src={post?.author?.avatarUrl}
+          alt={post?.author}
           className="w-10 h-10 rounded-full object-cover"
         />
         <div className="ml-3">
@@ -92,6 +104,35 @@ const PostCard = ({ post }) => {
         >
           {isFollowing ? "follow +" : "unfollow"}
         </button>
+        <div className="relative">
+          <EllipsisVerticalIcon
+            onClick={(e) => showPostOptions(e)}
+            className="h-5 w-5 text-gray-600 ml-1 cursor-pointer"
+          />
+
+          {postOptions && (
+            <div className="absolute right-0 mt-2 w-[110px] rounded bg-[#fdf8f8] z-10 p-2 shadow-lg">
+              <ul>
+                <li
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/edit-post/${post._id}`);
+                  }}
+                  className="text-sm p-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  Edit Post
+                </li>
+                <li
+                  onClick={() => dispatch(logout())}
+                  className="text-sm p-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  Delete Post
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}

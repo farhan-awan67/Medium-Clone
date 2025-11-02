@@ -29,7 +29,12 @@ router.post(
 );
 router.get("/", getAllPosts);
 router.get("/:slug", singlePost);
-router.put("/update-post/:slug", verifyToken, updatePost);
+router.put(
+  "/update-post/:slug",
+  upload.single("coverImage"),
+  verifyToken,
+  updatePost
+);
 router.patch("/publish/:id", verifyToken, makePostPublish);
 router.put("/:id/like", verifyToken, toggleLikes);
 router.delete("/delete-post/:slug", verifyToken, deletePost);

@@ -199,6 +199,10 @@ export const updatePost = asyncHandler(async (req, res) => {
   if (!post.author.equals(req.user._id))
     return res.status(401).json({ success: false, message: "not authorized" });
 
+  if (req.file) {
+    updates.coverImage = req.file.path; // or cloud upload logic
+  }
+
   const updatedPost = await Post.findOneAndUpdate({ slug }, updates, {
     new: true,
     runValidators: true,
