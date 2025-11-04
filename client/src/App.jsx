@@ -8,7 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NewPost from "./pages/NewPost";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "./features/authSlice";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import {
   addNotification,
   getAllUnreadNotifications,
@@ -16,6 +16,7 @@ import {
 import socket from "./socket";
 import DraftPosts from "./pages/DraftPosts";
 import EditPost from "./pages/EditPost";
+import ProtectedRoutes from "./components/ProtectedRoutes";
 
 const App = () => {
   const { user } = useSelector((state) => state.auth);
@@ -26,12 +27,11 @@ const App = () => {
     // if not
     if (!user?._id) return;
     // get all notifications
-    dispatch(getAllUnreadNotifications);
+    dispatch(getAllUnreadNotifications());
 
     socket.connect();
     // when frontend connect backend successfully
     socket.on("connect", () => {
-      console.log("frontend connectes backend socket");
       socket.emit("register", user?._id);
     });
 
@@ -44,7 +44,11 @@ const App = () => {
       );
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("notification");
+      socket.off("connect");
+      socket.disconnect();
+    };
   }, [dispatch, user?._id]);
 
   useEffect(() => {
@@ -61,11 +65,14 @@ const App = () => {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/new-post" element={<NewPost />} />
         <Route path="/post/:slug" element={<SpecificPost />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/draft-posts" element={<DraftPosts />} />
-        <Route path="/edit-post/:id" element={<EditPost />} />
+        {/* Protected routes */}
+        <Route element={<ProtectedRoutes />}>
+          <Route path="/new-post" element={<NewPost />} />
+          <Route path="/draft-posts" element={<DraftPosts />} />
+          <Route path="/edit-post/:id" element={<EditPost />} />
+        </Route>
       </Routes>
     </div>
   );

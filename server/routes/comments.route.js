@@ -8,7 +8,7 @@ import {
 import { verifyToken } from "../middlewares/auth.js";
 const router = express.Router();
 
-router.get("/:postId", verifyToken, getCommentsByPost);
+router.get("/:postId", getCommentsByPost);
 router.post("/:postId/comment", verifyToken, createComment);
 router.put("/comment/:id", verifyToken, updateComment);
 router.delete("/comment/:id", verifyToken, deleteComment);

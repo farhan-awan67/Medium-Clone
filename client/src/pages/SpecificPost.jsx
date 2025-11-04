@@ -4,15 +4,35 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import { getPostBySlug } from "../features/postSlice";
 
 const SpecificPost = () => {
-  const { posts } = useSelector((state) => state.posts);
+  const dispatch = useDispatch();
   const { slug } = useParams();
-  const post = posts.find((post) => post.slug === slug);
+  const { posts, currentPost, loading } = useSelector((state) => state.posts);
+
+  // Try to find in Redux cache first
+  const cachedPost = posts.find((p) => p.slug === slug);
+
+  useEffect(() => {
+    if (!cachedPost) {
+      dispatch(getPostBySlug(slug));
+    }
+  }, [slug, dispatch, cachedPost]);
+
+  const post = cachedPost || currentPost;
   const timeAgo = dayjs(post?.createdAt).fromNow(); // e.g., "2 hours ago"
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading post...</p>;
+  }
+
+  // if (loading) {
+  //   return <p className="text-center mt-10 text-gray-500">Post not found.</p>;
+  // }
 
   return (
     post && (

@@ -1,14 +1,14 @@
-// components/PostCard.jsx
 import {
   ChatBubbleLeftIcon,
   EllipsisVerticalIcon,
+  HeartIcon as OutlineHeartIcon,
+  BookmarkIcon as OutlineBookmarkIcon,
 } from "@heroicons/react/24/outline";
-import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
-import { HeartIcon as OutlineHeartIcon } from "@heroicons/react/24/outline";
-import { BookmarkIcon } from "@heroicons/react/24/solid";
-import { BookmarkIcon as NotFilled } from "@heroicons/react/24/outline";
-
-import { Link, useNavigate } from "react-router-dom";
+import {
+  HeartIcon as SolidHeartIcon,
+  BookmarkIcon as SolidBookmarkIcon,
+} from "@heroicons/react/24/solid";
+import { useNavigate } from "react-router-dom";
 import dayjs from "../utils/dayjs";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -18,143 +18,189 @@ import {
   toggleLikes,
 } from "../features/interactions";
 import { useEffect, useRef, useState } from "react";
-import CommentInput from "../components/CommentInput";
 import CommentsSection from "./CommentsSection";
+import { deletePostBySlug } from "../features/postSlice";
+import { toggleLogin } from "../features/uiSlice";
+import toast from "react-hot-toast";
 
 const PostCard = ({ post }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const { showLogin } = useSelector((state) => state.ui);
   const { followStatus, likesStatus, commentsByPost, bookmark } = useSelector(
     (state) => state.interactions
   );
-  const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  // inside your component
-  const timeAgo = dayjs(post.createdAt).fromNow(); // e.g., "2 hours ago"
+
+  const timeAgo = dayjs(post.createdAt).fromNow();
   const isFollowing = followStatus?.isFollowing;
   const isLiked = likesStatus?.like ?? post.isLiked;
   const likeCount = likesStatus?.likeCount ?? post.likes.length;
   const comments = commentsByPost[post._id] || [];
-  const commentCounts = comments?.length || post?.commentCount || 0;
+  const commentCount = comments?.length || post?.commentCount || 0;
   const isBookmarked =
     bookmark?.[post?._id] ?? post?.bookmarks?.includes(user?._id);
 
-  const [comment, setShowComment] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
   const commentRef = useRef(null);
-  const [postOptions, setPostOPtions] = useState(false);
 
-  // follow unfollow user
-  const followUnfollow = (e) => {
-    e.preventDefault();
-    dispatch(toggleFollow({ id: post.author._id.toString() }));
-  };
-
-  // like unlike user
-  const userLike = (e) => {
-    e.preventDefault();
-    dispatch(toggleLikes({ id: post._id?.toString() }));
-  };
-
-  // toggleBookmark
-  const toggleBookmark = (id) => {
-    dispatch(addBookmark({ id }));
-  };
-
-  // post options
-  const showPostOptions = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPostOPtions(!postOptions);
-  };
-
-  useEffect(() => {
-    if (comment && commentRef.current) {
-      const yOffset = -190; // adjust this offset as needed (e.g., -50, -150)
-      const y =
-        commentRef.current.getBoundingClientRect().top +
-        window.pageYOffset +
-        yOffset;
-
-      window.scrollTo({ top: y, behavior: "smooth" });
+  const requireLogin = () => {
+    if (!user?._id) {
+      toast.error("Please log in to continue");
+      dispatch(toggleLogin(!showLogin));
+      return false;
     }
-  }, [comment]);
+    return true;
+  };
+
+  const handleFollow = (e) => {
+    e.stopPropagation();
+    if (!requireLogin()) return;
+    dispatch(toggleFollow({ id: post.author._id }));
+  };
+
+  const handleLike = (e) => {
+    e.stopPropagation();
+    if (!requireLogin()) return;
+    dispatch(toggleLikes({ id: post._id }));
+  };
+
+  const handleBookmark = (e) => {
+    e.stopPropagation();
+    if (!requireLogin()) return;
+    dispatch(addBookmark({ id: post._id }));
+  };
+
+  const handleShowComments = (e) => {
+    e.stopPropagation();
+    if (!requireLogin()) return;
+
+    const toggled = !showComments;
+    setShowComments(toggled);
+
+    if (toggled) {
+      dispatch(getComments({ postId: post._id }));
+      setTimeout(() => {
+        if (commentRef.current) {
+          const yOffset = -180;
+          const y =
+            commentRef.current.getBoundingClientRect().top +
+            window.pageYOffset +
+            yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }, 150);
+    }
+  };
+
+  const handleDeletePost = (slug) => {
+    if (!requireLogin()) return;
+    dispatch(deletePostBySlug({ slug }))
+      .unwrap()
+      .then((res) =>
+        toast.success(res?.data?.message || "Post deleted successfully")
+      )
+      .catch(() => toast.error("Something went wrong"));
+  };
+
+  const toggleOptions = (e) => {
+    e.stopPropagation();
+    setShowOptions((prev) => !prev);
+  };
 
   useEffect(() => {
-    dispatch(getComments({ postId: post._id }));
-  }, [dispatch, post._id]);
+    const closeMenu = () => setShowOptions(false);
+    if (showOptions) {
+      document.addEventListener("click", closeMenu);
+    }
+    return () => document.removeEventListener("click", closeMenu);
+  }, [showOptions]);
+
+  const handleNavigate = () => {
+    navigate(`/post/${post.slug}`);
+  };
 
   return (
-    <Link
-      to={`/post/${post.slug}`}
-      className="block rounded-md shadow p-6 mb-6 bg-white"
+    <div
+      onClick={handleNavigate}
+      className="block rounded-md shadow p-6 mb-6 bg-white cursor-pointer"
     >
       {/* Author Section */}
       <div className="flex items-center mb-4">
         <img
-          src={post?.author?.avatarUrl}
-          alt={post?.author}
+          src={post?.author?.avatarUrl || "/default-avatar.png"}
+          alt={post?.author?.username || "Author avatar"}
           className="w-10 h-10 rounded-full object-cover"
         />
         <div className="ml-3">
           <p className="text-sm font-semibold">{post.author.username}</p>
           <p className="text-xs text-gray-500">{timeAgo}</p>
         </div>
-        <button
-          onClick={(e) => followUnfollow(e)}
-          className="ml-auto text-black cursor-pointer"
-        >
-          {isFollowing ? "follow +" : "unfollow"}
-        </button>
-        <div className="relative">
-          <EllipsisVerticalIcon
-            onClick={(e) => showPostOptions(e)}
-            className="h-5 w-5 text-gray-600 ml-1 cursor-pointer"
-          />
 
-          {postOptions && (
-            <div className="absolute right-0 mt-2 w-[110px] rounded bg-[#fdf8f8] z-10 p-2 shadow-lg">
-              <ul>
-                <li
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate(`/edit-post/${post._id}`);
-                  }}
-                  className="text-sm p-1.5 hover:bg-gray-100 rounded cursor-pointer"
-                >
-                  Edit Post
-                </li>
-                <li
-                  onClick={() => dispatch(logout())}
-                  className="text-sm p-1.5 hover:bg-gray-100 rounded cursor-pointer"
-                >
-                  Delete Post
-                </li>
-              </ul>
-            </div>
-          )}
-        </div>
+        {user?._id !== post.author._id && (
+          <button
+            onClick={handleFollow}
+            className="ml-auto bg-black text-white px-4 py-1 rounded hover:bg-gray-800"
+          >
+            {isFollowing ? "Unfollow" : "Follow +"}
+          </button>
+        )}
+
+        {user?._id === post.author._id && (
+          <div className="relative ml-auto">
+            <EllipsisVerticalIcon
+              onClick={toggleOptions}
+              className="h-5 w-5 text-gray-600 cursor-pointer"
+            />
+
+            {showOptions && (
+              <div className="absolute right-0 mt-2 w-[110px] rounded bg-[#fdf8f8] z-10 p-2 shadow-lg">
+                <ul>
+                  <li
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/edit-post/${post._id}`);
+                    }}
+                    className="text-sm p-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                  >
+                    Edit Post
+                  </li>
+                  <li
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePost(post.slug);
+                    }}
+                    className="text-sm p-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                  >
+                    Delete Post
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
       <p className="text-gray-700 mb-4">{post.excerpt}</p>
 
-      {/* Image */}
-      {post.coverImage && (
+      {post.coverImage && post.coverImage.trim() !== "" && (
         <img
           src={post.coverImage}
-          alt="Post"
+          alt="Post cover"
           className="w-full h-64 object-cover rounded mb-4 border border-zinc-100"
         />
       )}
 
       {/* Actions */}
       <div
-        onClick={(e) => e.preventDefault()}
+        onClick={(e) => e.stopPropagation()}
         className="flex items-center gap-6 text-gray-600"
       >
         <button
-          onClick={(e) => userLike(e)}
+          onClick={handleLike}
           className="flex items-center gap-1 hover:text-red-500"
         >
           {isLiked ? (
@@ -162,38 +208,36 @@ const PostCard = ({ post }) => {
           ) : (
             <OutlineHeartIcon className="w-5 h-5 cursor-pointer" />
           )}
-
           <span>{likeCount}</span>
         </button>
+
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            setShowComment(!comment);
-          }}
+          onClick={handleShowComments}
           className="flex items-center gap-1 hover:text-blue-500"
         >
           <ChatBubbleLeftIcon className="w-5 h-5 cursor-pointer" />
-          <span>{commentCounts}</span>
+          <span>{commentCount}</span>
         </button>
+
         <button
-          onClick={() => toggleBookmark(post._id.toString())}
+          onClick={handleBookmark}
           className="ml-auto hover:text-yellow-500"
         >
           {isBookmarked ? (
-            <BookmarkIcon className="h-6 w-6 text-black cursor-pointer" />
+            <SolidBookmarkIcon className="h-6 w-6 text-black cursor-pointer" />
           ) : (
-            <NotFilled className="w-5 h-5 cursor-pointer inset-0" />
+            <OutlineBookmarkIcon className="w-5 h-5 cursor-pointer" />
           )}
         </button>
       </div>
-      {comment ? (
+
+      {/* Comments Section */}
+      {showComments && (
         <div ref={commentRef}>
           <CommentsSection postId={post._id} comments={comments} />
         </div>
-      ) : (
-        ""
       )}
-    </Link>
+    </div>
   );
 };
 

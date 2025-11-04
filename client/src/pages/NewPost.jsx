@@ -51,10 +51,7 @@ const NewPost = () => {
     formData.append("tags", tags);
     formData.append("coverImage", coverImage);
     formData.append("status", status);
-    // Correct way to log
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
+    
 
     if (status === "published") {
       dispath(addNewPost({ formData }));
@@ -142,9 +139,6 @@ const NewPost = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Create a New Post
           </h1>
-          <button className="px-4 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-900 transition">
-            Save Draft
-          </button>
         </div>
 
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -161,20 +155,6 @@ const NewPost = () => {
               className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
-
-          {/* Excerpt */}
-          {/* <div className="mb-5">
-          <label className="block text-gray-700 font-medium mb-1">
-            Excerpt
-          </label>
-          <textarea
-            rows={2}
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            placeholder="Write a short summary..."
-            className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          />
-        </div> */}
 
           {/* Cover Image Upload */}
           <div className="mb-5">
@@ -285,7 +265,7 @@ const NewPost = () => {
               type="submit"
               className="px-5 py-2 cursor-pointer bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
             >
-              {status === "publish" ? "Publish Post" : "Save as Draft"}
+              {status === "published" ? "Publish Post" : "Save as Draft"}
             </button>
           </div>
         </form>

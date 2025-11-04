@@ -10,7 +10,6 @@ import {
 const DraftPosts = () => {
   const { posts } = useSelector((state) => state.posts);
   let drafts = posts?.filter((post) => post.status === "draft");
-  console.log(drafts);
   const dispatch = useDispatch();
   //   const drafts = [
   //     {

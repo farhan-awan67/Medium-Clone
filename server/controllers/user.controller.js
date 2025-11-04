@@ -309,6 +309,7 @@ export const userNotifications = asyncHandler(async (req, res) => {
   //  find user notifications and validate
   const notifications = await Notifications.find({ user: userId, read: false })
     .populate("actor", "username avatarUrl")
+    .populate("post", "slug")
     .sort({
       createdAt: -1,
     });

@@ -71,12 +71,11 @@ const Login = () => {
                 {authTab === "Login" ? "Login" : "Sign in"}
               </h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-neutral-400">
-                Don't have an account yet?
+                Don't have an account yet? {""}
                 <span
-                  className="cursor-pointer"
+                  className="cursor-pointer text-blue-600"
                   onClick={() => dispatch(setAuthTab("Sign up"))}
                 >
-                  {" "}
                   Sign up here
                 </span>
               </p>

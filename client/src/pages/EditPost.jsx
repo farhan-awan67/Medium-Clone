@@ -13,7 +13,6 @@ const EditPost = () => {
   const { posts } = useSelector((state) => state.posts);
 
   const postToEdit = posts?.find((post) => post._id === id);
-  console.log(postToEdit)
   // fallback if posts are not loaded yet
   if (!postToEdit) {
     return (

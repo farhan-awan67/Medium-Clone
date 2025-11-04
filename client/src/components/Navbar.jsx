@@ -2,8 +2,12 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { toggleLogin } from "../features/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../features/authSlice";
-import { markNotificationRead } from "../features/notificationsSlice";
+import {
+  markAllNotificationsAsRead,
+  markNotificationRead,
+} from "../features/notificationsSlice";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { showLogin } = useSelector((state) => state.ui);
@@ -15,11 +19,27 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleNotificationClick = (id, postId) => {
-    // mark as read
+  const handleProtectedClick = (path) => {
+    if (!token) {
+      toast.error("Please log in to continue");
+      dispatch(toggleLogin(!showLogin));
+      return;
+    }
+    navigate(path);
+  };
+
+  const handleNotificationClick = (id, slug) => {
     dispatch(markNotificationRead({ id }));
-    // navigate to the post (optional)
-    // if (postId) navigate(`/post/${postId}`);
+    navigate(`/post/${slug}`);
+    setShowDropdown(!showDropdown);
+  };
+
+  // mark all notification as read
+  const markAllNotificationRead = () => {
+    dispatch(markAllNotificationsAsRead())
+      .unwrap()
+      .then((res) => toast.success(res.message))
+      .catch((err) => toast.error(err));
   };
 
   return (
@@ -31,17 +51,22 @@ const Navbar = () => {
         WriteUp
       </h1>
 
-      {/* nav items */}
       <div className="flex items-center gap-8 font-medium">
-        {/* Write Post */}
-        <NavLink to="/new-post" className="hover:text-[#007aff]">
+        {/* Write Post (protected) */}
+        <button
+          onClick={() => handleProtectedClick("/new-post")}
+          className="hover:text-[#007aff] cursor-pointer"
+        >
           Write Post
-        </NavLink>
+        </button>
 
-        {/* draft posts */}
-        <NavLink to="/draft-posts" className="hover:text-[#007aff]">
+        {/* Draft Posts (protected) */}
+        <button
+          onClick={() => handleProtectedClick("/draft-posts")}
+          className="hover:text-[#007aff] cursor-pointer"
+        >
           Draft Posts
-        </NavLink>
+        </button>
 
         {/* Notifications */}
         {token && (
@@ -58,7 +83,6 @@ const Navbar = () => {
               )}
             </button>
 
-            {/* Dropdown */}
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-[280px] bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-80 overflow-y-auto">
                 {userNotifications.length === 0 ? (
@@ -69,21 +93,42 @@ const Navbar = () => {
                   userNotifications.map((n) => (
                     <div
                       key={n._id}
-                      onClick={() => handleNotificationClick(n._id, n.postId)}
-                      className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                      onClick={() =>
+                        handleNotificationClick(n._id, n.post.slug)
+                      }
+                      className={`p-3 border-b border-gray-100 cursor-pointer transition ${
+                        n.read
+                          ? "bg-white hover:bg-gray-50"
+                          : "bg-blue-50 hover:bg-blue-100"
+                      }`}
                     >
-                      <p className="text-sm text-gray-800">
-                        <span className="font-semibold">{n.senderName}</span>{" "}
-                        {n.type === "like" && "liked your post"}
-                        {n.type === "comment" && "commented on your post"}
-                        {n.type === "bookmark" && "bookmarked your post"}
+                      <p
+                        className="w-full text-end"
+                        onClick={markAllNotificationRead}
+                      >
+                        Mark all notification as read
                       </p>
-                      <p className="text-[11px] text-gray-400 mt-1">
-                        {new Date(n.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <img
+                          src={n.actor.avatarUrl || "/default-avatar.png"}
+                          alt="User avatar"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <p className="text-sm text-gray-800 leading-tighter  ">
+                          <span className="font-semibold leading-tighter ">
+                            {n.actor.username}
+                          </span>{" "}
+                          {n.type === "like" && "liked your post"}
+                          {n.type === "comment" && "commented on your post"}
+                          {n.type === "bookmark" && "bookmarked your post"}
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-1">
+                          {new Date(n.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </div>
                   ))
                 )}

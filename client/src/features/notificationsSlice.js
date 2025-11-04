@@ -4,9 +4,8 @@ import api from "../utils/api";
 // get unread notification when user login
 export const getAllUnreadNotifications = createAsyncThunk(
   "user/unreadNotifications",
-  async ({ _ }, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      console.log("inside unread notification thunk");
       const res = await api.get(`/api/notifications/unread`);
       return res.data.notifications;
     } catch (error) {
@@ -23,10 +22,24 @@ export const markNotificationRead = createAsyncThunk(
   "user/notifications",
   async ({ id }, { rejectWithValue }) => {
     try {
-      console.log("inside mark read notification thunk");
       const res = await api.get(`/api/notifications/${id}/read`);
-      console.log(res.data);
-      return res.data.success;
+      return { id, read: res.data.success };
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(
+        error.response?.data?.message || "Something went wrong"
+      );
+    }
+  }
+);
+
+// mark all notification as read
+export const markAllNotificationsAsRead = createAsyncThunk(
+  "user/notification",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/api/notifications/mark-all-read`);
+      return res.data;
     } catch (error) {
       console.log(error);
       return rejectWithValue(
@@ -38,7 +51,6 @@ export const markNotificationRead = createAsyncThunk(
 
 const initialState = {
   userNotifications: [],
-  read: null,
   loading: false,
   error: null,
 };
@@ -70,9 +82,28 @@ const notificationsSlice = createSlice({
       })
       .addCase(markNotificationRead.fulfilled, (state, action) => {
         state.loading = false;
-        state.read = action.payload;
+        const { id, read } = action.payload;
+        state.userNotifications = state.userNotifications.map((notifi) =>
+          notifi._id === id ? { ...notifi, read: true } : notifi
+        );
       })
       .addCase(markNotificationRead.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // mark all notification as read
+      .addCase(markAllNotificationsAsRead.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(markAllNotificationsAsRead.fulfilled, (state, action) => {
+        state.loading = false;
+        // mark all notifications in Redux as read
+        state.userNotifications = state.userNotifications.map((n) => ({
+          ...n,
+          read: true,
+        }));
+      })
+      .addCase(markAllNotificationsAsRead.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

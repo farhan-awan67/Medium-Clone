@@ -6,7 +6,6 @@ export const addNewPost = createAsyncThunk(
   "posts/newPost",
   async ({ formData }, { rejectWithValue }) => {
     try {
-      console.log("inside add new post thunk", formData);
       const res = await api.post(`/api/posts/create-post`, formData);
       return res.data.post;
     } catch (error) {
@@ -21,7 +20,6 @@ export const updatePost = createAsyncThunk(
   "post/updatePost",
   async ({ formData, slug }, { rejectWithValue }) => {
     try {
-      console.log(slug, formData.entries())
       const res = await api.put(`/api/posts/update-post/${slug}`, formData);
       return { message: res.data.message, post: res.data.post };
     } catch (error) {
@@ -31,12 +29,26 @@ export const updatePost = createAsyncThunk(
   }
 );
 
+// get post by slug
+export const getPostBySlug = createAsyncThunk(
+  "posts/getPostBySlug",
+  async (slug, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/api/posts/${slug}`);
+      return res.data.post;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to load post"
+      );
+    }
+  }
+);
+
 // draft post
 export const saveDraftPost = createAsyncThunk(
   "post/draftPost",
   async ({ formData }, { rejectWithValue }) => {
     try {
-      console.log("inside draft post thunk", formData);
       const res = await api.post(`/api/posts/draft-post`, formData);
       return res.data.post;
     } catch (error) {
@@ -81,8 +93,7 @@ export const deletePostBySlug = createAsyncThunk(
   async ({ slug }, { rejectWithValue }) => {
     try {
       const res = await api.delete(`/api/posts/delete-post/${slug}`);
-      const { posts } = res.data;
-      return posts; // goes to fulfilled
+      return { slug, data: res.data }; // goes to fulfilled
     } catch (error) {
       console.log(error);
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -92,8 +103,9 @@ export const deletePostBySlug = createAsyncThunk(
 
 const initialState = {
   posts: [],
+  currentPost: null,
   error: null,
-  loading: "",
+  loading: false,
 };
 
 const PostSlice = createSlice({
@@ -106,6 +118,7 @@ const PostSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchPosts.fulfilled, (state, action) => {
+        state.loading = false;
         state.posts = action.payload;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
@@ -114,9 +127,10 @@ const PostSlice = createSlice({
 
       // new post
       .addCase(addNewPost.pending, (state) => {
-        state.loading = "loading..";
+        state.loading = true;
       })
       .addCase(addNewPost.fulfilled, (state, action) => {
+        state.loading = false;
         state.posts.unshift(action.payload);
       })
       .addCase(addNewPost.rejected, (state, action) => {
@@ -141,6 +155,12 @@ const PostSlice = createSlice({
       .addCase(updatePost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // post by slug
+      .addCase(getPostBySlug.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentPost = action.payload;
       })
 
       // draft post
@@ -170,6 +190,19 @@ const PostSlice = createSlice({
         state.posts.unshift(post);
       })
       .addCase(makePostPublished.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // delete post
+      .addCase(deletePostBySlug.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(deletePostBySlug.fulfilled, (state, action) => {
+        state.loading = false;
+        const { slug, data } = action.payload;
+        state.posts = state.posts.filter((post) => post.slug !== slug);
+      })
+      .addCase(deletePostBySlug.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

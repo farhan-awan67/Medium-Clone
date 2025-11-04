@@ -9,7 +9,7 @@ const router = express.Router();
 
 // get unread notifications
 router.get("/unread", verifyToken, userNotifications);
-router.get("/:id/unread", verifyToken, readNotification);
+router.get("/:id/read", verifyToken, readNotification);
 router.put("/mark-all-read", verifyToken, markAllNotificationsAsRead);
 
 export default router;

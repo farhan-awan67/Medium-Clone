@@ -39,9 +39,8 @@ const onlineUsers = new Map();
 
 // Socket.IO
 io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
   socket.on("register", (userId) => {
-    onlineUsers.set(userId, socket.id);
+    onlineUsers.set(String(userId), socket.id);
     console.log(`${userId} is online`);
   });
   socket.on("disconnect", () => {
@@ -57,8 +56,7 @@ io.on("connection", (socket) => {
 });
 
 export const sendNotification = async (recipientId, notification) => {
-  console.log(recipientId, notification);
-  const socketId = onlineUsers.get(recipientId);
+  const socketId = onlineUsers.get(String(recipientId));
   if (socketId) {
     io.to(socketId).emit("notification", notification);
   }
