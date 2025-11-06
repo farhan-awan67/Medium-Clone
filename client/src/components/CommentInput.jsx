@@ -37,11 +37,19 @@ const CommentInput = ({ postId }) => {
       className="w-full max-w-2xl mt-6 p-4 border border-gray-200 rounded-md"
     >
       <div className="flex items-start space-x-4">
-        <img
-          src={user?.avatarUrl || "/default-avatar.png"}
-          alt="User avatar"
-          className="w-10 h-10 rounded-full object-cover"
-        />
+        <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+          {user?.avatarUrl ? (
+            <img
+              src={user?.avatarUrl || "/default-avatar.png"}
+              alt={username}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="font-medium text-base">
+              {user?.username.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
 
         <div className="flex-1">
           <textarea

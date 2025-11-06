@@ -42,6 +42,12 @@ const Navbar = () => {
       .catch((err) => toast.error(err));
   };
 
+  // logout
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
+
   return (
     <nav className="border-b px-4 sm:px-10 flex justify-between items-center h-[70px] bg-white">
       <h1
@@ -55,7 +61,7 @@ const Navbar = () => {
         {/* Write Post (protected) */}
         <button
           onClick={() => handleProtectedClick("/new-post")}
-          className="hover:text-[#007aff] cursor-pointer"
+          className="hover:text-[#007aff] cursor-pointer leading-tighter hidden sm:block "
         >
           Write Post
         </button>
@@ -63,7 +69,7 @@ const Navbar = () => {
         {/* Draft Posts (protected) */}
         <button
           onClick={() => handleProtectedClick("/draft-posts")}
-          className="hover:text-[#007aff] cursor-pointer"
+          className="hover:text-[#007aff] cursor-pointer leading-tighter hidden sm:block "
         >
           Draft Posts
         </button>
@@ -140,20 +146,61 @@ const Navbar = () => {
         {/* Profile / Login */}
         {token ? (
           <div className="group relative cursor-pointer">
-            <img
-              src={user?.avatarUrl || "/default-avatar.png"}
-              alt="profile"
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <ul className="hidden group-hover:block w-[110px] rounded bg-[#fdf8f8] absolute z-10 -right-6 top-8.5 p-2 shadow-lg">
+            {user?.avatarUrl !== "" ? (
+              <img
+                src={user?.avatarUrl || "/default-avatar.png"}
+                alt="profile"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                {user?.username?.split("")[0]}
+              </div>
+            )}
+            <ul className="hidden group-hover:block w-[130px] rounded bg-[#fdf8f8] absolute z-10 -right-1 top-9.5 sm:-right-6 sm:top-8.5 p-2 shadow-lg">
+              {/* Write Post (protected) */}
               <li
-                onClick={() => navigate("/profile")}
+                onClick={() => handleProtectedClick("/new-post")}
+                className="text-sm p-1.5 hover:bg-gray-100 rounded block sm:hidden "
+              >
+                Write Post
+              </li>
+
+              {/* Draft Posts (protected) */}
+              <li
+                onClick={() => handleProtectedClick("/draft-posts")}
+                className="text-sm p-1.5 hover:bg-gray-100 rounded block sm:hidden "
+              >
+                Draft Posts
+              </li>
+              <li
+                onClick={() => {
+                  navigate("/profile");
+                }}
                 className="text-sm p-1.5 hover:bg-gray-100 rounded"
               >
                 Profile
               </li>
               <li
-                onClick={() => dispatch(logout())}
+                onClick={() => navigate("/user/bookmarks")}
+                className="text-sm p-1.5 hover:bg-gray-100 rounded"
+              >
+                Bookmarks
+              </li>
+              <li
+                onClick={() => navigate("/user/followers-following")}
+                className="text-sm p-1.5 hover:bg-gray-100 rounded"
+              >
+                followers-following
+              </li>
+              <li
+                onClick={() => navigate("/user/posts")}
+                className="text-sm p-1.5 hover:bg-gray-100 rounded"
+              >
+                Posts
+              </li>
+              <li
+                onClick={handleLogout}
                 className="text-sm p-1.5 hover:bg-gray-100 rounded"
               >
                 Logout

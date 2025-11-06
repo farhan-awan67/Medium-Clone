@@ -4,6 +4,8 @@ import { toggleLogin, setAuthTab } from "../features/uiSlice"; // Adjust the pat
 import { fetchUser } from "../features/authSlice";
 import { useValidate } from "../hooks/useValidate";
 import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const { authTab, showLogin } = useSelector((state) => state.ui);
@@ -54,6 +56,11 @@ const Login = () => {
   };
 
   if (!showLogin || token) return null;
+
+  // error
+  if (error) {
+    return toast.error(error);
+  }
 
   return (
     showLogin && (
@@ -187,7 +194,13 @@ const Login = () => {
                     type="submit"
                     className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                   >
-                    {authTab === "Login" ? "Login" : "Sign in"}
+                    {loading ? (
+                      <Loading className="w-6 h-6 " />
+                    ) : authTab === "Login" ? (
+                      "Login"
+                    ) : (
+                      "Sign in"
+                    )}
                   </button>
                 </div>
               </form>

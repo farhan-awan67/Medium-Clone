@@ -6,9 +6,10 @@ import {
   fetchPosts,
   makePostPublished,
 } from "../features/postSlice";
+import Loading from "../components/Loading";
 
 const DraftPosts = () => {
-  const { posts } = useSelector((state) => state.posts);
+  const { posts,loading,error } = useSelector((state) => state.posts);
   let drafts = posts?.filter((post) => post.status === "draft");
   const dispatch = useDispatch();
   //   const drafts = [
@@ -41,6 +42,14 @@ const DraftPosts = () => {
   useEffect(() => {
     dispatch(fetchPosts());
   }, []);
+
+  if (loading) {
+    return <Loading className="w-8 h-8 mt-6" />;
+  }
+  // error
+  if (error) {
+    return <p className="text-red-500 text-center">{error}</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 md:px-8">

@@ -6,13 +6,17 @@ import {
 import dayjs from "dayjs";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getPostBySlug } from "../features/postSlice";
+import Loading from "../components/Loading";
 
 const SpecificPost = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { slug } = useParams();
-  const { posts, currentPost, loading } = useSelector((state) => state.posts);
+  const { posts, currentPost, loading, error } = useSelector(
+    (state) => state.posts
+  );
 
   // Try to find in Redux cache first
   const cachedPost = posts.find((p) => p.slug === slug);
@@ -27,16 +31,22 @@ const SpecificPost = () => {
   const timeAgo = dayjs(post?.createdAt).fromNow(); // e.g., "2 hours ago"
 
   if (loading) {
-    return <p className="text-center mt-10">Loading post...</p>;
+    return <Loading className="w-8 h-8 mt-6" />;
   }
-
-  // if (loading) {
-  //   return <p className="text-center mt-10 text-gray-500">Post not found.</p>;
-  // }
+  // error
+  if (error) {
+    return <p className="text-red-500 text-center">{error}</p>;
+  }
 
   return (
     post && (
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-7">
+        <button
+          onClick={() => navigate("/")}
+          className="bg-black rounded  text-white p-2 text-sm mb-3 cursor-pointer"
+        >
+          Go Back
+        </button>
         {/* Cover Image */}
         <div className="mb-8">
           <img

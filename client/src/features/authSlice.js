@@ -8,6 +8,7 @@ export const fetchUser = createAsyncThunk(
       const res = await api.post(`/api/auth/${authTab}`, credentials);
       if (res.data.success) {
         const { user, token } = res.data; // ✅ Only return user object
+        console.log(user);
         // ✅ Store token in localStorage for persistence
         if (token) {
           localStorage.setItem("token", token);
@@ -52,7 +53,7 @@ export const updateUserProfile = createAsyncThunk(
 const initialState = {
   user: {},
   token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
-  loading: "",
+  loading: false,
   error: "",
 };
 
@@ -69,9 +70,10 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchUser.pending, (state) => {
-        state.loading = "loading..";
+        state.loading = true;
       })
       .addCase(fetchUser.fulfilled, (state, action) => {
+        state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token; // store token in redux state as well
       })
@@ -80,9 +82,10 @@ const authSlice = createSlice({
       })
       // get user profile
       .addCase(getCurrentUser.pending, (state) => {
-        state.loading = "loading..";
+        state.loading = true;
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.loading = false;
         state.user = action.payload;
         // state.token = action.payload.token; // store token in redux state as well
       })
@@ -91,9 +94,10 @@ const authSlice = createSlice({
       })
       // update user profile
       .addCase(updateUserProfile.pending, (state) => {
-        state.loading = "loading..";
+        state.loading = true;
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
         state.user = action.payload;
         // state.token = action.payload.token; // store token in redux state as well
       })

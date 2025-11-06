@@ -15,9 +15,12 @@ const Home = () => {
     dispatch(fetchPosts());
   }, []);
 
-  // const tags = [...new Set(posts.flatMap((post) => post.tags || []))];
-  if (!publishedPosts) {
-    return <Loading className="w-9 h-9" />;
+  if (loading) {
+    return <Loading className="w-8 h-8 mt-6" />;
+  }
+  // error
+  if (error) {
+    return <p className="text-red-500 text-center">{error}</p>;
   }
 
   return (

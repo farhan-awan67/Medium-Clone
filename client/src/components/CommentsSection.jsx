@@ -61,11 +61,19 @@ const CommentsSection = ({ postId, comments }) => {
               key={id}
               className="flex space-x-4 border-b border-gray-200 pb-4 relative"
             >
-              <img
-                src={comment.author.avatarUrl}
-                alt={`${comment.author.username}'s avatar`}
-                className="w-12 h-12 rounded-full object-cover"
-              />
+              <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                {comment.author.avatarUrl ? (
+                  <img
+                    src={comment?.author?.avatarUrl || "/default-avatar.png"}
+                    alt={`${comment.author.username}'s avatar`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="font-medium text-base">
+                    {comment?.author?.username?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
 
               <div className="flex-1">
                 <div className="flex items-center space-x-2">

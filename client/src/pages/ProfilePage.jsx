@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUserProfile } from "../features/authSlice";
+import Loading from "../components/Loading";
 
 const ProfilePage = () => {
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading, error } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [userData, setUserData] = useState({
     name: "",
@@ -59,6 +60,14 @@ const ProfilePage = () => {
       });
     }
   }, [user]);
+
+  if (loading) {
+    return <Loading className="w-8 h-8 mt-6" />;
+  }
+  // error
+  if (error) {
+    return <p className="text-red-500 text-center">{error}</p>;
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">

@@ -86,7 +86,9 @@ export const loginUser = asyncHandler(async (req, res) => {
   const token = await user.generateToken();
 
   // user to sent back
-  const userForUi = await User.findOne({ $or: [{ username }, { email }] });
+  const userForUi = await User.findOne({ $or: [{ username }, { email }] })
+    .populate("followers", "username name avatarUrl bio")
+    .populate("following", "username name avatarUrl bio");
 
   return res.status(200).cookie("token", token, options).json({
     success: true,
@@ -103,7 +105,10 @@ export const getUserProfile = asyncHandler(async (req, res) => {
   // avatarUrl: file.path
 
   // lets find user in db
-  const user = await User.findOne({ _id });
+  const user = await User.findOne({ _id })
+    .populate("posts")
+    .populate("followers", "username name avatarUrl bio")
+    .populate("following", "username name avatarUrl bio");
 
   if (!user) {
     return res.status(404).json({ message: "User not found" });

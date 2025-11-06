@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Tags from "../models/tags.model.js";
 import Notifications from "../models/notifications.model.js";
 import { sendNotification } from "../server.js";
+import User from "../models/user.model.js";
 
 // const calculateReadTime = (text) => {
 //   // Remove HTML tags if bodyHtml is used
@@ -53,6 +54,7 @@ export const createPost = asyncHandler(async (req, res) => {
   });
 
   await post.save();
+  await User.findByIdAndUpdate(author, { $push: { posts: post._id } });
 
   if (tags && tags.length > 0) {
     for (let tagName of tags) {

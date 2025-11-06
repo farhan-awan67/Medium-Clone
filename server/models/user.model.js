@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // small arrays ok for MVP
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }], // saved posts
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }], // <--- added
     role: { type: String, enum: ["user", "admin"], default: "user" },
   },
   { timestamps: true }

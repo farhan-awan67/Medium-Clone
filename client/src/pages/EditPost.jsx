@@ -5,12 +5,21 @@ import { useParams, useNavigate } from "react-router-dom";
 // import toast from "react-hot-toast";
 import { updatePost } from "../features/postSlice";
 import toast from "react-hot-toast";
+import Loading from "../components/Loading";
 
 const EditPost = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { posts } = useSelector((state) => state.posts);
+  const { posts,loading,error } = useSelector((state) => state.posts);
+
+  if (loading) {
+    return <Loading className="w-8 h-8 mt-6" />;
+  }
+  // error
+  if (error) {
+    return <p className="text-red-500 text-center">{error}</p>;
+  }
 
   const postToEdit = posts?.find((post) => post._id === id);
   // fallback if posts are not loaded yet

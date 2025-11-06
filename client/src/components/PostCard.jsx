@@ -34,8 +34,9 @@ const PostCard = ({ post }) => {
 
   const timeAgo = dayjs(post.createdAt).fromNow();
   const isFollowing = followStatus?.isFollowing;
-  const isLiked = likesStatus?.like ?? post.isLiked;
-  const likeCount = likesStatus?.likeCount ?? post.likes.length;
+  const postLikes = likesStatus?.[post._id];
+  const isLiked = postLikes?.like ?? post.isLiked;
+  const likeCount = postLikes?.likeCount ?? post.likes.length;
   const comments = commentsByPost[post._id] || [];
   const commentCount = comments?.length || post?.commentCount || 0;
   const isBookmarked =
@@ -141,7 +142,7 @@ const PostCard = ({ post }) => {
         {user?._id !== post.author._id && (
           <button
             onClick={handleFollow}
-            className="ml-auto bg-black text-white px-4 py-1 rounded hover:bg-gray-800"
+            className="ml-auto bg-black text-white px-4 py-1 rounded hover:bg-gray-800 cursor-pointer"
           >
             {isFollowing ? "Unfollow" : "Follow +"}
           </button>

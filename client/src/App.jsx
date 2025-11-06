@@ -17,6 +17,9 @@ import socket from "./socket";
 import DraftPosts from "./pages/DraftPosts";
 import EditPost from "./pages/EditPost";
 import ProtectedRoutes from "./components/ProtectedRoutes";
+import BookmarksPage from "./pages/BookmarksPage";
+import FollowersFollowingPage from "./pages/FollowersFollowingPage";
+import PostsPage from "./pages/PostsPage";
 
 const App = () => {
   const { user } = useSelector((state) => state.auth);
@@ -72,6 +75,12 @@ const App = () => {
           <Route path="/new-post" element={<NewPost />} />
           <Route path="/draft-posts" element={<DraftPosts />} />
           <Route path="/edit-post/:id" element={<EditPost />} />
+          <Route path="/user/bookmarks" element={<BookmarksPage />} />
+          <Route
+            path="/user/followers-following"
+            element={<FollowersFollowingPage />}
+          />
+          <Route path="/user/posts" element={<PostsPage />} />
         </Route>
       </Routes>
     </div>

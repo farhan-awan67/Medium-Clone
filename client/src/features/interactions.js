@@ -21,7 +21,7 @@ export const toggleLikes = createAsyncThunk(
   async ({ id }, { rejectWithValue }) => {
     try {
       const res = await api.put(`/api/posts/${id}/like`);
-      return res.data;
+      return { postId: id, like: res.data.like, likeCount: res.data.likeCount };
     } catch (error) {
       console.log("Thunk error:", error);
       return rejectWithValue(error.response?.data || error.message);
@@ -111,7 +111,7 @@ const initialState = {
   likesStatus: {},
   commentsByPost: {},
   bookmark: null,
-  loading: "",
+  loading: false,
   error: "",
 };
 
@@ -122,9 +122,10 @@ const interactionSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(toggleFollow.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(toggleFollow.fulfilled, (state, action) => {
+        state.loading = false;
         state.followStatus = action.payload;
       })
       .addCase(toggleFollow.rejected, (state, action) => {
@@ -133,10 +134,11 @@ const interactionSlice = createSlice({
 
       //   toggle likes
       .addCase(toggleLikes.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(toggleLikes.fulfilled, (state, action) => {
-        state.likesStatus = action.payload;
+        const { postId, like, likeCount } = action.payload;
+        state.likesStatus[postId] = { like, likeCount };
       })
       .addCase(toggleLikes.rejected, (state, action) => {
         state.error = action.payload;
@@ -144,9 +146,10 @@ const interactionSlice = createSlice({
 
       //   comments
       .addCase(addComment.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(addComment.fulfilled, (state, action) => {
+        state.loading = false;
         const { comment } = action.payload;
         const postId = comment.post.toString();
         if (!state.commentsByPost[postId]) {
@@ -160,9 +163,10 @@ const interactionSlice = createSlice({
 
       // get comments
       .addCase(getComments.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(getComments.fulfilled, (state, action) => {
+        state.loading = false;
         const { comments, postId } = action.payload;
         if (!comments) return;
         state.commentsByPost[postId] = comments;
@@ -173,9 +177,10 @@ const interactionSlice = createSlice({
 
       // update comment
       .addCase(updateComment.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(updateComment.fulfilled, (state, action) => {
+        state.loading = false;
         const { comment } = action.payload;
         state.commentsByPost[comment.post] = state.commentsByPost[
           comment.post
@@ -189,15 +194,14 @@ const interactionSlice = createSlice({
 
       // delete comment
       .addCase(deleteComment.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(deleteComment.fulfilled, (state, action) => {
+        state.loading = false;
         const { id, message, postId } = action.payload;
         state.commentsByPost[postId] = state.commentsByPost[postId].filter(
           (comment) => comment._id.toString() !== id
         );
-        state.loading = "";
-        state.error = "";
       })
       .addCase(deleteComment.rejected, (state, action) => {
         state.error = action.payload;
@@ -205,9 +209,10 @@ const interactionSlice = createSlice({
 
       // handle bookmarks
       .addCase(addBookmark.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(addBookmark.fulfilled, (state, action) => {
+        state.loading = false;
         const { postId, bookmarked } = action.payload;
         if (!state.bookmark) state.bookmark = {};
         state.bookmark[postId] = bookmarked;

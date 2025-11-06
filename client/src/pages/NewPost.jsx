@@ -3,6 +3,7 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { useDispatch } from "react-redux";
 import { addNewPost, fetchPosts, saveDraftPost } from "../features/postSlice";
+import Loading from "../components/Loading";
 
 const NewPost = () => {
   const dispath = useDispatch();
@@ -51,7 +52,6 @@ const NewPost = () => {
     formData.append("tags", tags);
     formData.append("coverImage", coverImage);
     formData.append("status", status);
-    
 
     if (status === "published") {
       dispath(addNewPost({ formData }));
@@ -124,7 +124,6 @@ const NewPost = () => {
     "underline",
     "strike",
     "list",
-    "bullet",
     "blockquote",
     "code-block",
     "link",
@@ -242,14 +241,14 @@ const NewPost = () => {
           </div>
 
           {/* Status */}
-          <div className="mb-8">
+          <div className="mb-8 ">
             <label className="block text-gray-700 font-medium mb-1">
               Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>

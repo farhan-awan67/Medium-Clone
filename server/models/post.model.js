@@ -54,7 +54,6 @@ PostSchema.virtual("likeCount").get(function () {
   return this.likes ? this.likes.length : 0;
 });
 PostSchema.index({ createdAt: -1 });
-PostSchema.index({ tags: 1 });
 PostSchema.index({ title: "text", excerpt: "text", bodyHtml: "text" });
 
 const Post = mongoose.model("Post", PostSchema);
