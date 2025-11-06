@@ -8,7 +8,6 @@ export const fetchUser = createAsyncThunk(
       const res = await api.post(`/api/auth/${authTab}`, credentials);
       if (res.data.success) {
         const { user, token } = res.data; // ✅ Only return user object
-        console.log(user);
         // ✅ Store token in localStorage for persistence
         if (token) {
           localStorage.setItem("token", token);
@@ -50,8 +49,24 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
+// get specific user profile
+export const getSpecificUser = createAsyncThunk(
+  "user/profile",
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/api/auth/user/${id}/profile`);
+      return res.data.user;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Something went wrong"
+      );
+    }
+  }
+);
+
 const initialState = {
   user: {},
+  specificUserProfile: {},
   token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
   loading: false,
   error: "",
@@ -102,6 +117,17 @@ const authSlice = createSlice({
         // state.token = action.payload.token; // store token in redux state as well
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // specific user
+      .addCase(getSpecificUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getSpecificUser.fulfilled, (state, action) => {
+        state.specificUserProfile = action.payload;
+      })
+      .addCase(getSpecificUser.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

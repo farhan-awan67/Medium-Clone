@@ -4,6 +4,7 @@ import Tags from "../models/tags.model.js";
 import Notifications from "../models/notifications.model.js";
 import { sendNotification } from "../server.js";
 import User from "../models/user.model.js";
+import Comments from "../models/comments.model.js";
 
 // const calculateReadTime = (text) => {
 //   // Remove HTML tags if bodyHtml is used
@@ -21,15 +22,20 @@ export const createPost = asyncHandler(async (req, res) => {
   const file = req.file;
   let tagsArray = [];
 
-  if (typeof tags === "string" && tags.trim() !== "") {
+  // Case 1: if tags is a string like "js, async await"
+  if (typeof tags === "string") {
     tagsArray = tags
       .split(",")
       .map((tag) => tag.trim())
-      .filter(Boolean); // "writing" → ["writing"]
-  } else if (tags) {
-    tagsArray = [tags]; // fallback if somehow tags is a single non-string value
-  } else {
-    tagsArray = []; // safe empty if nothing provided
+      .filter(Boolean); // removes empty strings
+  }
+  // Case 2: if tags is already an array like ["js", "async await"]
+  else if (Array.isArray(tags)) {
+    tagsArray = tags.map((tag) => tag.trim()).filter(Boolean);
+  }
+  // Case 3: fallback (nothing provided)
+  else {
+    tagsArray = [];
   }
 
   if (!title || !bodyHtml) {
@@ -56,20 +62,17 @@ export const createPost = asyncHandler(async (req, res) => {
   await post.save();
   await User.findByIdAndUpdate(author, { $push: { posts: post._id } });
 
-  if (tags && tags.length > 0) {
-    for (let tagName of tags) {
+  if (tagsArray.length > 0) {
+    for (let tagName of tagsArray) {
       const slug = tagName.toLowerCase().replace(/\s+/g, "-");
 
-      const tag = await Tags.findOne({ slug });
+      let tag = await Tags.findOne({ slug });
       if (tag) {
         tag.postCount += 1;
         await tag.save();
       } else {
-        new Tags({
-          name: tagName,
-          slug,
-          postCount: 1,
-        });
+        tag = new Tags({ name: tagName, slug, postCount: 1 });
+        await tag.save();
       }
     }
   }
@@ -273,11 +276,33 @@ export const deletePost = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Post not found" });
   }
 
-  // Optional: check if the logged-in user is the author
-  if (!post.author.equals(req.user._id))
+  if (!post.author.equals(req.user._id)) {
     return res.status(403).json({ message: "Not authorized" });
+  }
 
-  await Post.findOneAndDelete({ slug });
+  // Update or delete tags
+  await Promise.all(
+    post.tags.map(async (tagName) => {
+      const tag = await Tags.findOne({ name: tagName });
+      if (!tag) return;
+
+      tag.postCount -= 1;
+      if (tag.postCount <= 0) {
+        await tag.deleteOne();
+      } else {
+        await tag.save();
+      }
+    })
+  );
+
+  // Delete all comments related to this post
+  await Comments.deleteMany({ post: post._id });
+
+  // Remove post reference from user (optional)
+  await User.findByIdAndUpdate(req.user._id, { $pull: { posts: post._id } });
+
+  // Delete the post
+  await post.deleteOne();
 
   res.status(200).json({
     success: true,

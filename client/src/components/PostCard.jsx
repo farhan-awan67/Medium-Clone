@@ -130,11 +130,21 @@ const PostCard = ({ post }) => {
       {/* Author Section */}
       <div className="flex items-center mb-4">
         <img
+          onClick={(e) => {
+            e.stopPropagation(),
+              navigate(`/user/${post.author._id.toString()}/profile`);
+          }}
           src={post?.author?.avatarUrl || "/default-avatar.png"}
           alt={post?.author?.username || "Author avatar"}
           className="w-10 h-10 rounded-full object-cover"
         />
-        <div className="ml-3">
+        <div
+          onClick={(e) => {
+            e.stopPropagation(),
+              navigate(`/user/${post.author._id.toString()}/profile`);
+          }}
+          className="ml-3"
+        >
           <p className="text-sm font-semibold">{post.author.username}</p>
           <p className="text-xs text-gray-500">{timeAgo}</p>
         </div>

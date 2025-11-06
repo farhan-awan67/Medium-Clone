@@ -13,7 +13,7 @@ const Navbar = () => {
   const { showLogin } = useSelector((state) => state.ui);
   const { user, token } = useSelector((state) => state.auth);
   const { userNotifications } = useSelector((state) => state.notifications);
-  console.log(userNotifications);
+  const unreadCount = userNotifications.filter((n) => !n.read).length;
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="border-b px-4 sm:px-10 flex justify-between items-center h-[70px] bg-white">
+    <nav className="border-b px-2.5 sm:px-10 flex justify-between items-center h-[70px] bg-white">
       <h1
         onClick={() => navigate("/")}
         className="text-[32px] font-bold cursor-pointer select-none"
@@ -84,7 +84,7 @@ const Navbar = () => {
               <span className="text-md">🔔</span>
               {userNotifications?.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-[5px] py-px">
-                  {userNotifications.length}
+                  {unreadCount}
                 </span>
               )}
             </button>
@@ -96,47 +96,77 @@ const Navbar = () => {
                     No new notifications
                   </p>
                 ) : (
-                  userNotifications.map((n) => (
-                    <div
-                      key={n._id}
-                      onClick={() =>
-                        handleNotificationClick(n._id, n.post.slug)
-                      }
-                      className={`p-3 border-b border-gray-100 cursor-pointer transition ${
-                        n.read
-                          ? "bg-white hover:bg-gray-50"
-                          : "bg-blue-50 hover:bg-blue-100"
-                      }`}
-                    >
-                      <p
-                        className="w-full text-end"
-                        onClick={markAllNotificationRead}
+                  <div className="w-full max-w-md mx-auto bg-white rounded-md shadow">
+                    {/* Top bar with 'Mark all as read' */}
+                    <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+                      <h2 className="text-lg font-semibold text-gray-800">
+                        Notifications
+                      </h2>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(markAllNotificationRead());
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        Mark all notification as read
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <img
-                          src={n.actor.avatarUrl || "/default-avatar.png"}
-                          alt="User avatar"
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <p className="text-sm text-gray-800 leading-tighter  ">
-                          <span className="font-semibold leading-tighter ">
-                            {n.actor.username}
-                          </span>{" "}
-                          {n.type === "like" && "liked your post"}
-                          {n.type === "comment" && "commented on your post"}
-                          {n.type === "bookmark" && "bookmarked your post"}
-                        </p>
-                        <p className="text-[11px] text-gray-400 mt-1">
-                          {new Date(n.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
+                        Mark all as read
+                      </button>
                     </div>
-                  ))
+
+                    {/* Notifications list */}
+                    <div>
+                      {userNotifications.map((n) => (
+                        <div
+                          key={n._id}
+                          onClick={() =>
+                            handleNotificationClick(n._id, n.post.slug)
+                          }
+                          className={`p-4 border-b border-gray-100 cursor-pointer transition ${
+                            n.read
+                              ? "bg-white hover:bg-gray-50"
+                              : "bg-blue-50 hover:bg-blue-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                              {n.actor.avatarUrl ? (
+                                <img
+                                  src={
+                                    n.actor.avatarUrl || "/default-avatar.png"
+                                  }
+                                  alt={n.actor.username}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="font-medium text-base">
+                                  {n.actor.username?.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-800 leading-tight">
+                                <span className="font-semibold">
+                                  {n.actor.username}
+                                </span>{" "}
+                                {n.type === "like" && "liked your post"}
+                                {n.type === "comment" &&
+                                  "commented on your post"}
+                                {n.type === "bookmark" &&
+                                  "bookmarked your post"}
+                              </p>
+                              <p className="text-[11px] text-gray-400 mt-1">
+                                {new Date(n.createdAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

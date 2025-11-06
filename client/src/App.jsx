@@ -20,6 +20,8 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import BookmarksPage from "./pages/BookmarksPage";
 import FollowersFollowingPage from "./pages/FollowersFollowingPage";
 import PostsPage from "./pages/PostsPage";
+import { trendingTags } from "./features/postSlice";
+import SpecificUser from "./pages/SpecificUser";
 
 const App = () => {
   const { user } = useSelector((state) => state.auth);
@@ -58,6 +60,7 @@ const App = () => {
     if (localStorage.getItem("token")) {
       dispatch(getCurrentUser());
     }
+    dispatch(trendingTags());
   }, []);
 
   return (
@@ -70,6 +73,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/post/:slug" element={<SpecificPost />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/user/:id/profile" element={<SpecificUser />} />
         {/* Protected routes */}
         <Route element={<ProtectedRoutes />}>
           <Route path="/new-post" element={<NewPost />} />

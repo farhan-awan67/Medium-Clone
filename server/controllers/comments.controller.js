@@ -179,8 +179,6 @@ export const deleteComment = asyncHandler(async (req, res) => {
       success: false,
       message: "❌ Post not found or comment count update failed",
     });
-  } else {
-    console.log("✅ Updated post:", updatedPost.commentCount);
   }
 
   res.status(200).json({

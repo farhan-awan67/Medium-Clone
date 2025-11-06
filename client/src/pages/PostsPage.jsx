@@ -33,8 +33,7 @@ const PostCard = ({ title, excerpt, author, readTime, tags }) => (
 );
 
 export default function PostsPage() {
-  const { user, token,loading,error } = useSelector((state) => state.auth);
-  console.log(user);
+  const { user, token, loading, error } = useSelector((state) => state.auth);
   const posts = user?.posts;
 
   if (loading) {

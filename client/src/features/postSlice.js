@@ -9,7 +9,6 @@ export const addNewPost = createAsyncThunk(
       const res = await api.post(`/api/posts/create-post`, formData);
       return res.data.post;
     } catch (error) {
-      console.log(error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -23,7 +22,6 @@ export const updatePost = createAsyncThunk(
       const res = await api.put(`/api/posts/update-post/${slug}`, formData);
       return { message: res.data.message, post: res.data.post };
     } catch (error) {
-      console.log(error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -52,7 +50,6 @@ export const saveDraftPost = createAsyncThunk(
       const res = await api.post(`/api/posts/draft-post`, formData);
       return res.data.post;
     } catch (error) {
-      console.log(error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -67,7 +64,6 @@ export const fetchPosts = createAsyncThunk(
       const { posts } = res.data;
       return posts; // goes to fulfilled
     } catch (error) {
-      console.log(error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -81,7 +77,6 @@ export const makePostPublished = createAsyncThunk(
       const res = await api.patch(`/api/posts/publish/${id}`);
       return { id, post: res.data.post };
     } catch (error) {
-      console.log(error);
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -95,7 +90,19 @@ export const deletePostBySlug = createAsyncThunk(
       const res = await api.delete(`/api/posts/delete-post/${slug}`);
       return { slug, data: res.data }; // goes to fulfilled
     } catch (error) {
-      console.log(error);
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
+// get the trending tags
+export const trendingTags = createAsyncThunk(
+  "post/tags",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get("/api/tags/trending-tags");
+      return res.data.tags;
+    } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
@@ -104,6 +111,7 @@ export const deletePostBySlug = createAsyncThunk(
 const initialState = {
   posts: [],
   currentPost: null,
+  trendingTags: [],
   error: null,
   loading: false,
 };
@@ -203,6 +211,18 @@ const PostSlice = createSlice({
         state.posts = state.posts.filter((post) => post.slug !== slug);
       })
       .addCase(deletePostBySlug.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // trending tags
+      .addCase(trendingTags.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(trendingTags.fulfilled, (state, action) => {
+        state.loading = false;
+        state.trendingTags = action.payload;
+      })
+      .addCase(trendingTags.rejected, (state, action) => {
         state.error = action.payload;
       });
   },

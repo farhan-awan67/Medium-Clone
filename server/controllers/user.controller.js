@@ -117,6 +117,21 @@ export const getUserProfile = asyncHandler(async (req, res) => {
   return res.status(200).json({ success: true, user });
 });
 
+// get specific user profile
+export const getSpecificUserProfie = asyncHandler(async (req, res) => {
+  const userId = req.params.id;
+
+  // lets find user
+  const user = await User.findOne({ _id: userId })
+    .populate("posts")
+    .populate("following")
+    .populate("followers");
+  if (!user)
+    return res.status(404).json({ success: false, message: "user not found" });
+
+  return res.status(200).json({ success: true, user });
+});
+
 // update user profile
 export const updateUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.user; // assuming this is set by auth middleware

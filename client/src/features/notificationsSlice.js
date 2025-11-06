@@ -9,7 +9,6 @@ export const getAllUnreadNotifications = createAsyncThunk(
       const res = await api.get(`/api/notifications/unread`);
       return res.data.notifications;
     } catch (error) {
-      console.log(error);
       return rejectWithValue(
         error.response?.data?.message || "Something went wrong"
       );
@@ -25,7 +24,6 @@ export const markNotificationRead = createAsyncThunk(
       const res = await api.get(`/api/notifications/${id}/read`);
       return { id, read: res.data.success };
     } catch (error) {
-      console.log(error);
       return rejectWithValue(
         error.response?.data?.message || "Something went wrong"
       );
@@ -41,7 +39,6 @@ export const markAllNotificationsAsRead = createAsyncThunk(
       const res = await api.get(`/api/notifications/mark-all-read`);
       return res.data;
     } catch (error) {
-      console.log(error);
       return rejectWithValue(
         error.response?.data?.message || "Something went wrong"
       );

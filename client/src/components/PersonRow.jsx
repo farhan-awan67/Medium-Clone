@@ -3,15 +3,18 @@ import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { toggleLogin } from "../features/uiSlice";
 import { toggleFollow } from "../features/interactions";
+import { useState } from "react";
 
 const PersonRow = ({ avatarUrl, username, bio, _id }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { followStatus } = useSelector((state) => state.interactions);
   const { showLogin } = useSelector((state) => state.ui);
 
   // check if user is following this person
-  const inFollowing = user?.following?.some((f) => f._id === _id);
-  const inFollower = user?.followers?.some((f) => f._id === _id);
+  const following = user?.following?.some((f) => f._id === _id);
+  const isFollowing = followStatus?.isFollowing || following;
+  const [follow, setFollow] = useState(isFollowing);
 
   const requireLogin = () => {
     if (!user?._id) {
@@ -55,12 +58,12 @@ const PersonRow = ({ avatarUrl, username, bio, _id }) => {
         <button
           onClick={handleFollow}
           className={`ml-auto cursor-pointer px-4 py-1 rounded text-sm font-medium transition ${
-            inFollowing
+            follow
               ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
               : "bg-black text-white hover:bg-gray-800"
           }`}
         >
-          {inFollowing ? "Unfollow" : "Follow +"}
+          {follow ? "Unfollow" : "Follow +"}
         </button>
       )}
     </div>

@@ -9,7 +9,6 @@ export const toggleFollow = createAsyncThunk(
       const res = await api.put(`/api/auth/follow/${id}`);
       return res.data;
     } catch (error) {
-      console.log("Thunk error:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -23,7 +22,6 @@ export const toggleLikes = createAsyncThunk(
       const res = await api.put(`/api/posts/${id}/like`);
       return { postId: id, like: res.data.like, likeCount: res.data.likeCount };
     } catch (error) {
-      console.log("Thunk error:", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -40,7 +38,6 @@ export const addComment = createAsyncThunk(
       });
       return res.data;
     } catch (error) {
-      console.log("Comment post error", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -54,7 +51,6 @@ export const getComments = createAsyncThunk(
       const res = await api.get(`/api/post/${postId}`);
       return { postId, comments: res.data.comments }; // ✅ structured properly;
     } catch (error) {
-      console.log("Comment post error", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -65,13 +61,10 @@ export const updateComment = createAsyncThunk(
   "comment/update",
   async ({ id, body }, { rejectWithValue }) => {
     try {
-      console.log(body, "id and body from update thunk");
       const res = await api.put(`/api/post/comment/${id}`, { body });
-      console.log(res.data.comment);
       return { comment: res.data.comment };
     } catch (error) {
-      console.log(error);
-      rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -84,7 +77,6 @@ export const deleteComment = createAsyncThunk(
       const res = await api.delete(`/api/post/comment/${id}`);
       return { id, postId, message: res.data.message };
     } catch (error) {
-      console.log("Comment post error", error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -95,13 +87,11 @@ export const addBookmark = createAsyncThunk(
   "user/bookmarks",
   async ({ id }, { rejectWithValue }) => {
     try {
-      console.log("inside bookmark thunk");
       const res = await api.put(`/api/auth/bookmark/${id}`);
-      console.log(res.data.isBookmarked);
       return { postId: id, bookmarked: res.data.isBookmarked };
     } catch (error) {
       rejectWithValue(error);
-      console.log(error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );

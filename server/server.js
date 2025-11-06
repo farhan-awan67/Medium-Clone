@@ -12,6 +12,7 @@ import userRoutes from "./routes/user.routes.js";
 import postRoutes from "./routes/posts.routes.js";
 import commentRoute from "./routes/comments.route.js";
 import notificationsRoute from "./routes/notifications.route.js";
+import tagsRoutes from "./routes/tagsRoutes.route.js";
 
 const app = express();
 const server = createServer(app);
@@ -69,6 +70,7 @@ app.use("/api/auth", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/post", commentRoute);
 app.use("/api/notifications", notificationsRoute);
+app.use("/api/tags", tagsRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;

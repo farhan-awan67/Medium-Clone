@@ -1,6 +1,7 @@
 import express from "express";
 const router = express.Router();
 import {
+  getSpecificUserProfie,
   getUserProfile,
   loginUser,
   logoutUser,
@@ -19,6 +20,7 @@ import upload from "../middlewares/multer.js";
 router.post("/signup", registerUser);
 router.post("/login", loginUser);
 router.get("/profile", verifyToken, getUserProfile);
+router.get("/user/:id/profile", verifyToken, getSpecificUserProfie);
 router.post(
   "/profile",
   verifyToken,
