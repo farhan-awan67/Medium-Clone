@@ -59,7 +59,7 @@ const SpecificPost = () => {
         {/* Author Section */}
         <div className="flex items-center mb-6">
           <img
-            src="https://i.pravatar.cc/150?img=5"
+            src={post?.author?.avatarUrl || "default.png"}
             alt="Author"
             className="w-12 h-12 rounded-full object-cover"
           />
