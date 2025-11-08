@@ -8,7 +8,7 @@ const baseURL = isProd
   : import.meta.env.VITE_SERVER_API_LOCAL;
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_API,
+  baseURL,
   withCredentials: true,
 });
 
