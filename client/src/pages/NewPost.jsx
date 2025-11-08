@@ -3,7 +3,7 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { useDispatch } from "react-redux";
 import { addNewPost, fetchPosts, saveDraftPost } from "../features/postSlice";
-import Loading from "../components/Loading";
+import toast from "react-hot-toast";
 
 const NewPost = () => {
   const dispath = useDispatch();
@@ -18,22 +18,22 @@ const NewPost = () => {
 
   const isFormValid = () => {
     if (!title.trim()) {
-      alert("Please enter a title");
+      toast.error("Please enter a title");
       return false;
     }
 
     if (!bodyHtml) {
-      alert("Please enter the body content");
+      toast.error("Please enter the body content");
       return false;
     }
 
     if (!tags.trim()) {
-      alert("Please enter at least one tag");
+      toast.error("Please enter at least one tag");
       return false;
     }
 
     if (!coverImage) {
-      alert("Please upload a cover image");
+      toast.error("Please upload a cover image");
       return false;
     }
 

@@ -11,7 +11,7 @@ const EditPost = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { posts,loading,error } = useSelector((state) => state.posts);
+  const { posts, loading, error } = useSelector((state) => state.posts);
 
   if (loading) {
     return <Loading className="w-8 h-8 mt-6" />;
@@ -54,11 +54,11 @@ const EditPost = () => {
       return false;
     }
     if (!tags.trim()) {
-      alert("Please enter at least one tag");
+      toast.error("Please enter at least one tag");
       return false;
     }
     if (!coverImage && !preview) {
-      alert("Please upload a cover image");
+      toast.error("Please upload a cover image");
       return false;
     }
     return true;
