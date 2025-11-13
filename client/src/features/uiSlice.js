@@ -11,8 +11,8 @@ export const uiSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    toggleLogin(state) {
-      state.showLogin = !state.showLogin;
+    toggleLogin(state, action) {
+      state.showLogin = action.payload; // true or false
     },
     setAuthTab(state, action) {
       state.authTab = action.payload;

@@ -157,19 +157,6 @@ const ProfilePage = () => {
           />
         </div>
 
-        {/* Password */}
-        {/* <div>
-          <label className="block text-sm font-medium mb-1">New Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Leave blank to keep current"
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-indigo-500"
-          />
-        </div> */}
-
         {/* Submit Button */}
         <div className="text-center">
           <button

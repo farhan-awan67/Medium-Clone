@@ -25,22 +25,28 @@ const Login = () => {
     if (isValid) return;
 
     if (authTab === "signup") {
-      dispatch(fetchUser({ authTab, credentials: data }));
-      setData({
-        username: "",
-        email: "",
-        password: "",
-      });
+      dispatch(fetchUser({ authTab, credentials: data }))
+        .unwrap()
+        .then(() => {
+          toast.success("signup successfully!");
+          setData({ username: "", email: "", password: "" });
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
     } else {
       const { email, password } = data;
       dispatch(
         fetchUser({ authTab: "login", credentials: { email, password } })
-      );
-      setData({
-        username: "",
-        email: "",
-        password: "",
-      });
+      )
+        .unwrap()
+        .then(() => {
+          toast.success("login successfully!");
+          setData({ email: "", password: "" });
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
     }
   };
 
@@ -65,7 +71,7 @@ const Login = () => {
   return (
     showLogin && (
       <div
-        onClick={() => dispatch(toggleLogin(!showLogin))}
+        onClick={() => dispatch(toggleLogin(false))}
         className="absolute top-0 left-0 w-full h-screen flex justify-center items-center bg-[#fffbfbb5]"
       >
         <div

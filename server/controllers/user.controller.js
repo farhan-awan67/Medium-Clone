@@ -123,7 +123,10 @@ export const getSpecificUserProfie = asyncHandler(async (req, res) => {
 
   // lets find user
   const user = await User.findOne({ _id: userId })
-    .populate("posts")
+    .populate({
+      path: "posts",
+      populate: { path: "author", select: "username avatarUrl" },
+    })
     .populate("following")
     .populate("followers");
   if (!user)

@@ -166,7 +166,8 @@ export const makePostPublish = asyncHandler(async (req, res) => {
 export const getAllPosts = asyncHandler(async (req, res) => {
   const posts = await Post.find({})
     .populate("author", "username avatarUrl")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean(); // makes it easier to modify the result
 
   res.status(200).json({ success: true, posts });
 });
@@ -175,11 +176,11 @@ export const getAllPosts = asyncHandler(async (req, res) => {
 export const singlePost = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  const post = await Post.findOneAndUpdate(
-    { slug, status: "published" },
-    { $inc: { views: 1 } },
-    { new: true }
-  ).populate("author", "name username avatar");
+  await Post.updateOne({ slug, status: "published" }, { $inc: { views: 1 } });
+
+  const post = await Post.findOne({ slug, status: "published" })
+    .populate("author", "name username avatarUrl")
+    .lean();
 
   if (!post) {
     return res
@@ -220,7 +221,6 @@ export const updatePost = asyncHandler(async (req, res) => {
   });
 });
 
-// PUT /api/posts/:id/like
 // toggleLikes
 export const toggleLikes = asyncHandler(async (req, res) => {
   const postId = req.params.id;
@@ -261,7 +261,7 @@ export const toggleLikes = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: isLiked ? "Post unliked" : "Post liked",
+    message: isLiked ? "Post liked" : "Post unliked",
     like: isLiked,
     likeCount: post.likes.length,
   });

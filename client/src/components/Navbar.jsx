@@ -22,7 +22,7 @@ const Navbar = () => {
   const handleProtectedClick = (path) => {
     if (!token) {
       toast.error("Please log in to continue");
-      dispatch(toggleLogin(!showLogin));
+      dispatch(toggleLogin(true));
       return;
     }
     navigate(path);
@@ -45,6 +45,7 @@ const Navbar = () => {
   // logout
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(toggleLogin(false)); // close login modal
     navigate("/");
   };
 
@@ -105,9 +106,9 @@ const Navbar = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          dispatch(markAllNotificationRead());
+                          markAllNotificationRead();
                         }}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
                       >
                         Mark all as read
                       </button>
@@ -239,7 +240,7 @@ const Navbar = () => {
           </div>
         ) : (
           <button
-            onClick={() => dispatch(toggleLogin(!showLogin))}
+            onClick={() => dispatch(toggleLogin(true))}
             className="cursor-pointer px-6 py-2 bg-black transition text-white rounded-full"
           >
             Login

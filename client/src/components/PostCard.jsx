@@ -34,8 +34,8 @@ const PostCard = ({ post }) => {
 
   const timeAgo = dayjs(post.createdAt).fromNow();
   const isFollowing = followStatus?.isFollowing;
-  const postLikes = likesStatus?.[post._id];
-  const isLiked = postLikes?.like ?? post.isLiked;
+  const postLikes = likesStatus?.[post?._id];
+  const isLiked = postLikes?.like ?? post.likes.includes(user?._id);
   const likeCount = postLikes?.likeCount ?? post.likes.length;
   const comments = commentsByPost[post._id] || [];
   const commentCount = comments?.length || post?.commentCount || 0;
@@ -129,15 +129,23 @@ const PostCard = ({ post }) => {
     >
       {/* Author Section */}
       <div className="flex items-center mb-4">
-        <img
-          onClick={(e) => {
-            e.stopPropagation(),
-              navigate(`/user/${post.author._id.toString()}/profile`);
-          }}
-          src={post?.author?.avatarUrl || "/default-avatar.png"}
-          alt={post?.author?.username || "Author avatar"}
-          className="w-10 h-10 rounded-full object-cover"
-        />
+        <div className="w-10 h-10 rounded-full object-cover bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+          {post?.author?.avatarUrl ? (
+            <img
+              onClick={(e) => {
+                e.stopPropagation(),
+                  navigate(`/user/${post.author._id.toString()}/profile`);
+              }}
+              src={post?.author?.avatarUrl || "/default-avatar.png"}
+              alt={post?.author?.username || "Author avatar"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="font-medium text-base">
+              {post?.author?.username?.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
         <div
           onClick={(e) => {
             e.stopPropagation(),
@@ -195,7 +203,10 @@ const PostCard = ({ post }) => {
 
       {/* Content */}
       <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-      <p className="text-gray-700 mb-4">{post.excerpt}</p>
+      <div
+        className="prose prose-base sm:prose-lg lg:prose-xl max-w-none dark:prose-invert mb-10"
+        dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
+      ></div>
 
       {post.coverImage && post.coverImage.trim() !== "" && (
         <img

@@ -36,7 +36,7 @@ export const markAllNotificationsAsRead = createAsyncThunk(
   "user/notification",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await api.get(`/api/notifications/mark-all-read`);
+      const res = await api.put(`/api/notifications/mark-all-read`);
       return res.data;
     } catch (error) {
       return rejectWithValue(

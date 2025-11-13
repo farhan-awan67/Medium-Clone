@@ -16,17 +16,12 @@ const router = express.Router();
 
 // posts routes
 router.post(
-  "/posts/create-post",
+  "/create-post",
   upload.single("coverImage"),
   verifyToken,
   createPost
 );
-router.post(
-  "/posts/draft-post",
-  upload.single("coverImage"),
-  verifyToken,
-  draftPost
-);
+router.post("/draft-post", upload.single("coverImage"), verifyToken, draftPost);
 router.get("/", getAllPosts);
 router.get("/:slug", singlePost);
 router.put(

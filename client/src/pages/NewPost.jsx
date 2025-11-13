@@ -54,9 +54,23 @@ const NewPost = () => {
     formData.append("status", status);
 
     if (status === "published") {
-      dispath(addNewPost({ formData }));
+      dispath(addNewPost({ formData }))
+        .unwrap()
+        .then((data) => {
+          toast.success(data);
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
     } else {
-      dispath(saveDraftPost({ formData }));
+      dispath(saveDraftPost({ formData }))
+        .unwrap()
+        .then((data) => {
+          toast.success(data);
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
     }
     setTitle("");
     setBodyHtml("");

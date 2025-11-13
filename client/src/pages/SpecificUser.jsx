@@ -1,43 +1,40 @@
-import React from "react";
+
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getSpecificUser } from "../features/authSlice";
 
 const SpecificUser = () => {
   const { specificUserProfile } = useSelector((state) => state.auth);
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(getSpecificUser({ id }));
   }, [id]);
-
-  // const user = {
-  //   id: "68e91930181a75784880f734",
-  //   username: "spider",
-  //   email: "spider@gmail.com",
-  //   name: "spider man",
-  //   bio: "Web master buddy.",
-  //   avatarUrl:
-  //     "https://res.cloudinary.com/dcaygnnk0/image/upload/v1760431580/medium_clone/qlo4gtm9rp3cz5wwmvhy.jpg",
-  //   createdAt: "2025-10-10T14:33:20.582Z",
-  //   followers: [],
-  //   following: [],
-  //   posts: [],
-  // };
 
   return (
     specificUserProfile && (
       <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col items-center px-4 py-10">
         {/* Profile Header */}
         <div className="max-w-3xl w-full bg-white rounded-xl shadow-sm p-6 flex flex-col items-center text-center">
-          <img
-            src={specificUserProfile.avatarUrl}
-            alt={specificUserProfile.name}
-            className="w-32 h-32 rounded-full object-cover mb-4"
-          />
-          <h1 className="text-2xl font-semibold">{specificUserProfile.name}</h1>
+          <div className="rounded-full flex justify-center items-center w-20 h-20 overflow-hidden">
+            {specificUserProfile?.avatarUrl ? (
+              <img
+                src={specificUserProfile?.avatarUrl || "/default-avatar.png"}
+                alt={specificUserProfile?.username || "Author avatar"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="font-medium text-base">
+                {specificUserProfile?.username?.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <h1 className="text-2xl font-semibold mt-1">
+            {specificUserProfile.name}
+          </h1>
           <p className="text-gray-500">@{specificUserProfile.username}</p>
           <p className="mt-2 text-gray-700">{specificUserProfile.bio}</p>
 
@@ -89,18 +86,23 @@ const SpecificUser = () => {
                     className="bg-white rounded-xl shadow-sm hover:shadow-md transition flex flex-col sm:flex-row overflow-hidden"
                   >
                     {/* Cover Image */}
-                    {post.coverImage && (
-                      <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="w-full sm:w-48 h-40 object-cover"
-                      />
-                    )}
+                    <div className="m-2 rounded overflow-hidden">
+                      {post.coverImage && (
+                        <img
+                          src={post.coverImage}
+                          alt={post.title}
+                          className="w-full sm:w-48 h-full object-cover "
+                        />
+                      )}
+                    </div>
 
                     {/* Post Content */}
                     <div className="p-5 flex flex-col justify-between flex-1">
                       <div>
-                        <h3 className="text-xl font-semibold mb-2 hover:text-green-700 cursor-pointer">
+                        <h3
+                          onClick={() => navigate(`/post/${post.slug}`)}
+                          className="text-xl font-semibold mb-2 hover:text-green-700 cursor-pointer"
+                        >
                           {post.title}
                         </h3>
                         <p className="text-gray-600 text-sm mb-3 line-clamp-3">
@@ -109,11 +111,24 @@ const SpecificUser = () => {
 
                         {/* Author Info */}
                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <img
-                            src={post.author.avatarUrl}
-                            alt={post.author.username}
-                            className="w-6 h-6 rounded-full"
-                          />
+                          <div className="w-10 h-10 rounded-full object-cover bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                            {post?.author?.avatarUrl ? (
+                              <img
+                                src={
+                                  post?.author?.avatarUrl ||
+                                  "/default-avatar.png"
+                                }
+                                alt={post?.author?.username || "Author avatar"}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="font-medium text-base">
+                                {post?.author?.username
+                                  ?.charAt(0)
+                                  .toUpperCase()}
+                              </span>
+                            )}
+                          </div>
                           <span>{post.author.username}</span>
                           <span>•</span>
                           <span>
@@ -123,14 +138,14 @@ const SpecificUser = () => {
                       </div>
 
                       {/* Meta Info */}
-                      <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
+                      <div className="flex items-center justify-between flex-col gap-2 text-xs text-gray-500 mt-3">
                         <div className="flex gap-4">
                           <span>{post.readTime} min read</span>
                           <span>{post.views} views</span>
                           <span>{post.likes.length} likes</span>
                           <span>{post.commentCount} comments</span>
                         </div>
-                        {post.tags.length > 0 && (
+                        {post?.tags?.length > 0 && (
                           <div className="flex gap-2">
                             {post.tags.map((tag) => (
                               <span

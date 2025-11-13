@@ -30,7 +30,7 @@ export const updatePost = createAsyncThunk(
 // get post by slug
 export const getPostBySlug = createAsyncThunk(
   "posts/getPostBySlug",
-  async (slug, { rejectWithValue }) => {
+  async ({ slug }, { rejectWithValue }) => {
     try {
       const res = await api.get(`/api/posts/${slug}`);
       return res.data.post;

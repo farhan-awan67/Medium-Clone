@@ -28,9 +28,11 @@ const Home = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <TrendingTags />
-      {publishedPosts?.map((post) => (
-        <PostCard key={post._id} post={post} />
-      ))}
+      {publishedPosts?.length > 0 ? (
+        publishedPosts.map((post) => <PostCard key={post._id} post={post} />)
+      ) : (
+        <p className="text-center">No posts yet.</p>
+      )}
     </div>
   );
 };
