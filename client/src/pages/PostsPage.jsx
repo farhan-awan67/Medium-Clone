@@ -8,11 +8,13 @@ const Tag = ({ children }) => (
   </span>
 );
 
-const PostCard = ({ title, excerpt, author, readTime, tags }) => (
+const PostCard = ({ title, excerpt, author, coverImage, readTime, tags }) => (
   <article className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
     <div className="flex flex-col sm:flex-row gap-4">
-      <div className="shrink-0 w-full sm:w-44 h-28 rounded-md bg-gray-100 flex items-center justify-center text-gray-500">
-        <span className="text-sm font-medium">COVER</span>
+      <div className="shrink-0 w-full sm:w-44 h-28 rounded-md bg-gray-100 flex items-center justify-center text-gray-500 overflow-hidden">
+        {coverImage && (
+          <img className="w-full h-full" src={coverImage} alt={title} />
+        )}
       </div>
 
       <div className="flex-1">

@@ -1,9 +1,10 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import BookmarkCard from "../components/BookmarkCard";
+import Loading from "../components/Loading";
 
 export default function BookmarksPage() {
-  const { user, token,loading,error } = useSelector((state) => state.auth);
+  const { user, token, loading, error } = useSelector((state) => state.auth);
   const bookmarks = user?.bookmarks;
 
   if (loading) {
@@ -25,7 +26,7 @@ export default function BookmarksPage() {
         </header>
 
         <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {bookmarks.length > 0 ? (
+          {bookmarks && bookmarks?.length > 0 ? (
             bookmarks.map((b, i) => <BookmarkCard key={i} {...b} />)
           ) : (
             <p className="text-sm text-gray-500">No Bookmark Posts.</p>
