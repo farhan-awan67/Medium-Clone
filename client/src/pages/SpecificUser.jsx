@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,7 +18,11 @@ const SpecificUser = () => {
       <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col items-center px-4 py-10">
         {/* Profile Header */}
         <div className="max-w-3xl w-full bg-white rounded-xl shadow-sm p-6 flex flex-col items-center text-center">
-          <div className="rounded-full flex justify-center items-center w-20 h-20 overflow-hidden">
+          <div
+            className={`rounded-full flex justify-center items-center w-20 h-20 overflow-hidden ${
+              specificUserProfile?.avatarUrl === "" && "border"
+            }`}
+          >
             {specificUserProfile?.avatarUrl ? (
               <img
                 src={specificUserProfile?.avatarUrl || "/default-avatar.png"}

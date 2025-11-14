@@ -48,6 +48,7 @@ const PostCard = ({ post }) => {
 
   const requireLogin = () => {
     if (!user?._id) {
+      window.scroll(0, 0);
       toast.error("Please log in to continue");
       dispatch(toggleLogin(!showLogin));
       return false;
@@ -203,16 +204,14 @@ const PostCard = ({ post }) => {
 
       {/* Content */}
       <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-      <div
-        className="prose prose-base sm:prose-lg lg:prose-xl max-w-none dark:prose-invert mb-10"
-        dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
-      ></div>
+      <p className="mb-3 text-gray-550">{post.excerpt}</p>
 
       {post.coverImage && post.coverImage.trim() !== "" && (
         <img
           src={post.coverImage}
           alt="Post cover"
-          className="w-full h-64 object-cover rounded mb-4 border border-zinc-100"
+          loading="lazy"
+          className="w-full h-64 object-cover bg-top rounded mb-4 border border-zinc-100"
         />
       )}
 

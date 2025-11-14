@@ -18,6 +18,7 @@ const PersonRow = ({ avatarUrl, username, bio, _id }) => {
 
   const requireLogin = () => {
     if (!user?._id) {
+      window.scroll(0, 0);
       toast.error("Please log in to continue");
       dispatch(toggleLogin(!showLogin));
       return false;

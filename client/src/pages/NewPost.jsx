@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addNewPost, fetchPosts, saveDraftPost } from "../features/postSlice";
 import toast from "react-hot-toast";
+import Loading from "../components/Loading";
 
 const NewPost = () => {
+  const { loading, error } = useSelector((state) => state.posts);
   const dispath = useDispatch();
-  const [excerpt, setExcerpt] = useState("");
   const [title, setTitle] = useState("");
   const [bodyHtml, setBodyHtml] = useState("");
   const [tags, setTags] = useState("");
@@ -58,6 +59,12 @@ const NewPost = () => {
         .unwrap()
         .then((data) => {
           toast.success(data);
+          setTitle("");
+          setBodyHtml("");
+          setTags("");
+          setStatus("");
+          setCoverImage(null);
+          setPreview(null);
         })
         .catch((err) => {
           toast.error(err);
@@ -67,17 +74,17 @@ const NewPost = () => {
         .unwrap()
         .then((data) => {
           toast.success(data);
+          setTitle("");
+          setBodyHtml("");
+          setTags("");
+          setStatus("");
+          setCoverImage(null);
+          setPreview(null);
         })
         .catch((err) => {
           toast.error(err);
         });
     }
-    setTitle("");
-    setBodyHtml("");
-    setTags("");
-    setStatus("");
-    setCoverImage(null);
-    setPreview(null);
   };
 
   // body change
@@ -143,6 +150,8 @@ const NewPost = () => {
     "link",
     "image",
   ];
+
+  if (error) toast.error(error);
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center px-4 py-10">
@@ -278,7 +287,13 @@ const NewPost = () => {
               type="submit"
               className="px-5 py-2 cursor-pointer bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
             >
-              {status === "published" ? "Publish Post" : "Save as Draft"}
+              {loading ? (
+                <Loading className="w-6 h-6" />
+              ) : status === "published" ? (
+                "Publish Post"
+              ) : (
+                "Save as Draft"
+              )}
             </button>
           </div>
         </form>

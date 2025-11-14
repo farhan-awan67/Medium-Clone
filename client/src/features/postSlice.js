@@ -7,7 +7,7 @@ export const addNewPost = createAsyncThunk(
   async ({ formData }, { rejectWithValue }) => {
     try {
       const res = await api.post(`/api/posts/create-post`, formData);
-      return res.data.post;
+      return res.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -48,7 +48,7 @@ export const saveDraftPost = createAsyncThunk(
   async ({ formData }, { rejectWithValue }) => {
     try {
       const res = await api.post(`/api/posts/draft-post`, formData);
-      return res.data.post;
+      return res.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
@@ -139,7 +139,7 @@ const PostSlice = createSlice({
       })
       .addCase(addNewPost.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts.unshift(action.payload);
+        state.posts.unshift(action.payload.post);
       })
       .addCase(addNewPost.rejected, (state, action) => {
         state.error = action.payload;
@@ -166,9 +166,16 @@ const PostSlice = createSlice({
       })
 
       // post by slug
+      .addCase(getPostBySlug.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(getPostBySlug.fulfilled, (state, action) => {
         state.loading = false;
         state.currentPost = action.payload;
+      })
+      .addCase(getPostBySlug.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
 
       // draft post
@@ -177,7 +184,7 @@ const PostSlice = createSlice({
       })
       .addCase(saveDraftPost.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts.unshift(action.payload);
+        state.posts.unshift(action.payload.post);
       })
       .addCase(saveDraftPost.rejected, (state, action) => {
         state.error = action.payload;
@@ -202,7 +209,7 @@ const PostSlice = createSlice({
       })
 
       // delete post
-      .addCase(deletePostBySlug.pending, (state, action) => {
+      .addCase(deletePostBySlug.pending, (state) => {
         state.loading = true;
       })
       .addCase(deletePostBySlug.fulfilled, (state, action) => {

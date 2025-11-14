@@ -7,20 +7,25 @@ import Loading from "../components/Loading";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { posts, trendingTags, loading, error } = useSelector(
-    (state) => state.posts
-  );
-
-  const publishedPosts = posts?.filter((post) => post.status === "published");
+  const { posts, loading, error } = useSelector((state) => state.posts);
 
   useEffect(() => {
     dispatch(fetchPosts());
   }, []);
 
+  const publishedPosts = posts?.filter((post) => post.status === "published");
+
+  // First render (before pending)
+  if (posts.length === 0 && !loading && !error) {
+    return <Loading className="w-8 h-8 mt-6" />;
+  }
+
+  // Loading
   if (loading) {
     return <Loading className="w-8 h-8 mt-6" />;
   }
-  // error
+
+  // Error
   if (error) {
     return <p className="text-red-500 text-center">{error}</p>;
   }
@@ -28,7 +33,7 @@ const Home = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <TrendingTags />
-      {publishedPosts?.length > 0 ? (
+      {publishedPosts.length > 0 ? (
         publishedPosts.map((post) => <PostCard key={post._id} post={post} />)
       ) : (
         <p className="text-center">No posts yet.</p>

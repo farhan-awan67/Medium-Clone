@@ -52,6 +52,7 @@ const SpecificPost = () => {
 
   const requireLogin = () => {
     if (!user?._id) {
+      window.scroll(0, 0);
       toast.error("Please log in to continue");
       dispatch(toggleLogin(!showLogin));
       return false;
@@ -130,11 +131,27 @@ const SpecificPost = () => {
       </div>
 
       <div className="flex items-center mb-6">
-        <img
-          src={post?.author?.avatarUrl || "default.png"}
-          alt="Author"
-          className="w-12 h-12 rounded-full object-cover"
-        />
+        <div
+          className={`w-10 h-10 rounded-full object-cover bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden ${
+            post?.author?.avatarUrl === "" && "border"
+          }`}
+        >
+          {post?.author?.avatarUrl ? (
+            <img
+              onClick={(e) => {
+                e.stopPropagation(),
+                  navigate(`/user/${post.author._id.toString()}/profile`);
+              }}
+              src={post?.author?.avatarUrl || "/default-avatar.png"}
+              alt={post?.author?.username || "Author avatar"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="font-medium text-base">
+              {post?.author?.username?.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
         <div className="ml-4">
           <p className="text-gray-800 font-semibold text-sm">
             {post.author.username}
