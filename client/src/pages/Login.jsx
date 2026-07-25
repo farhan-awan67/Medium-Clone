@@ -24,8 +24,8 @@ const Login = () => {
     const isValid = validateForm(data);
     if (isValid) return;
 
-    if (authTab === "signup") {
-      dispatch(fetchUser({ authTab, credentials: data }))
+    if (authTab === "Sign up") {
+      dispatch(fetchUser({ authTab: "signup", credentials: data }))
         .unwrap()
         .then(() => {
           toast.success("signup successfully!");
@@ -63,16 +63,13 @@ const Login = () => {
 
   if (!showLogin || token) return null;
 
-  // error
-  if (error) {
-    return toast.error(error);
-  }
+
 
   return (
     showLogin && (
       <div
         onClick={() => dispatch(toggleLogin(false))}
-        className="absolute top-0 left-0 w-full h-screen flex justify-center items-center bg-[#fffbfbb5]"
+        className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-[#fffbfbb5]"
       >
         <div
           onClick={(e) => e.stopPropagation()}

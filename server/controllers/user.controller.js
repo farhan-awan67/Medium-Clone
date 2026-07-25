@@ -102,7 +102,6 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const getUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const file = req.file;
-  // avatarUrl: file.path
 
   // lets find user in db
   const user = await User.findOne({ _id })

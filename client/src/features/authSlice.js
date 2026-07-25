@@ -93,6 +93,7 @@ const authSlice = createSlice({
         state.token = action.payload.token; // store token in redux state as well
       })
       .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
       // get user profile
@@ -105,6 +106,7 @@ const authSlice = createSlice({
         // state.token = action.payload.token; // store token in redux state as well
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
       // update user profile
@@ -117,6 +119,7 @@ const authSlice = createSlice({
         // state.token = action.payload.token; // store token in redux state as well
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
 
@@ -128,6 +131,7 @@ const authSlice = createSlice({
         state.specificUserProfile = action.payload;
       })
       .addCase(getSpecificUser.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },
